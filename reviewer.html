@@ -1,0 +1,3820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INF-304 Java Code Reviewer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+  --accent:#58a6ff;--text:#c9d1d9;--text-strong:#f0f6fc;--text-muted:#8b949e;
+  --green:#3fb950;--purple:#a371f7;--orange:#f0883e;--red:#f85149;--yellow:#e3b341;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+/* Header */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.hdr h1{font-size:1.1rem;font-weight:700;color:var(--text-strong);white-space:nowrap;background:linear-gradient(135deg,#58a6ff,#a371f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.search-wrap{flex:1;min-width:180px;max-width:380px;position:relative}
+.search-wrap input{width:100%;padding:6px 10px 6px 32px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap::before{content:'⌕';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:15px;pointer-events:none}
+.stat{font-size:12px;color:var(--text-muted);white-space:nowrap}
+/* Session nav */
+.sess-nav{display:flex;gap:8px;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+.sess-tab{padding:5px 16px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-muted);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;transition:all .15s}
+.sess-tab:hover{background:var(--surface2);color:var(--text)}
+.sess-tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+/* Main */
+.main{padding:24px;max-width:1400px;margin:0 auto}
+.sess-hdr{margin-bottom:20px}
+.sess-hdr h2{font-size:1.3rem;font-weight:700;color:var(--text-strong)}
+.sess-hdr p{color:var(--text-muted);font-size:13px;margin-top:2px}
+/* Section group */
+.sec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);padding:8px 0 12px;border-bottom:1px solid var(--border);margin:24px 0 16px;display:flex;align-items:center;gap:8px}
+.sec-label::before{content:'';flex:1;height:1px;background:var(--border)}
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:16px}
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:#58a6ff55}
+.card-hdr{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.card-left h3{font-size:13px;font-weight:600;color:var(--text-strong);font-family:'Courier New',monospace}
+.card-left p{font-size:12px;color:var(--text-muted);margin-top:2px}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.tag{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.t-output{background:#1a3a5c;color:#7eb8f7}
+.t-input{background:#1a3a5c;color:#7eb8f7}
+.t-classes{background:#2d1f4e;color:#c4a5fa}
+.t-inheritance{background:#2d1f4e;color:#c4a5fa}
+.t-oop{background:#2d1f4e;color:#c4a5fa}
+.t-arrays{background:#3d2a0a;color:#f0a84a}
+.t-strings{background:#3d2e0a;color:#e3b341}
+.t-loops{background:#0d3320;color:#3fb950}
+.t-conditionals{background:#0a2d2d;color:#39cfc8}
+.t-exceptions{background:#3d0f0f;color:#f87171}
+.t-static{background:#3d2a0a;color:#f0a84a}
+.t-operators{background:#0a2d2d;color:#39cfc8}
+.t-types{background:#3d2e0a;color:#e3b341}
+.t-casting{background:#0a2d2d;color:#39cfc8}
+.t-collections{background:#2d1f4e;color:#c4a5fa}
+.t-debugging{background:#3d0f0f;color:#f87171}
+/* Workbook tab accent */
+.sess-tab.wb-tab.on{background:var(--purple);border-color:var(--purple)}
+/* Workbook layout */
+.wb-domain{margin-bottom:36px}
+.wb-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.wb-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.wb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:10px;margin-bottom:20px}
+.wb-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px;display:flex;align-items:flex-start;gap:10px}
+.wb-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--text-muted);display:flex;align-items:center;justify-content:center;margin-top:1px}
+.wb-q{font-size:13px;color:var(--text);line-height:1.7;flex:1}
+.blank{display:inline-block;min-width:72px;border-bottom:2px solid var(--purple);cursor:pointer;color:transparent;padding:0 5px;font-weight:700;font-family:'Courier New',monospace;font-size:12px;transition:color .15s;user-select:none;border-radius:2px 2px 0 0}
+.blank:hover{background:#a371f722}
+.blank.show{color:var(--purple)}
+.wb-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.wb-btn{padding:4px 13px;background:transparent;border:1px solid var(--purple);border-radius:6px;color:var(--purple);cursor:pointer;font-size:12px;transition:all .15s}
+.wb-btn:hover{background:var(--purple);color:#fff}
+/* Project cards */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:14px}
+.proj-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.proj-card-hdr{background:var(--surface2);padding:11px 15px;border-bottom:1px solid var(--border)}
+.proj-card-hdr h3{font-size:13px;font-weight:700;color:var(--text-strong)}
+.proj-meta{display:flex;gap:14px;margin-top:5px;flex-wrap:wrap}
+.proj-meta-item{font-size:11px;color:var(--text-muted)}
+.proj-meta-item b{color:var(--text);font-weight:600}
+.proj-files{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.proj-file{padding:1px 7px;background:var(--bg);border:1px solid var(--border);border-radius:3px;font-size:10px;font-family:'Courier New',monospace;color:var(--accent)}
+.proj-body{padding:13px 15px}
+.proj-purpose{font-size:13px;color:var(--text);line-height:1.65;margin-bottom:14px;padding:9px 12px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--purple)}
+.proj-objectives{margin-bottom:14px}
+.proj-objectives-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px}
+.proj-objectives ul{list-style:none;display:flex;flex-direction:column;gap:4px}
+.proj-objectives ul li{font-size:12px;color:var(--text-muted);padding-left:14px;position:relative}
+.proj-objectives ul li::before{content:'▸';position:absolute;left:0;color:var(--purple)}
+.proj-steps{list-style:none;counter-reset:step}
+.proj-steps li{counter-increment:step;padding:7px 0 7px 34px;position:relative;font-size:13px;color:var(--text);border-bottom:1px solid var(--border);line-height:1.55}
+.proj-steps li:last-child{border-bottom:none}
+.proj-steps li::before{content:counter(step);position:absolute;left:0;top:7px;width:22px;height:22px;background:var(--purple);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+/* File tabs */
+.ftabs{display:flex;background:#0d1117;border-bottom:1px solid var(--border);overflow-x:auto}
+.ftab{padding:6px 14px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text-muted);cursor:pointer;font-size:11px;font-family:'Courier New',monospace;white-space:nowrap;transition:all .15s;position:relative}
+.ftab:hover{background:var(--surface2);color:var(--text)}
+.ftab.on{color:var(--accent);background:var(--surface)}
+.ftab.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+.ftab.fin{color:var(--green)}
+.ftab.fin.on{color:var(--green)}
+.ftab.fin.on::after{background:var(--green)}
+/* Code panel */
+.cpanel{display:none;position:relative}
+.cpanel.on{display:block}
+.cpanel pre{margin:0!important;border-radius:0!important;background:#0d1117!important;max-height:380px;overflow:auto;font-size:12px!important;line-height:1.6!important}
+.cpanel pre code{font-family:'Fira Code','Cascadia Code','Courier New',monospace!important}
+.copy-btn{position:absolute;top:8px;right:8px;padding:3px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text-muted);cursor:pointer;font-size:11px;transition:all .15s;z-index:5}
+.copy-btn:hover{background:var(--border);color:var(--text)}
+.copy-btn.ok{color:var(--green);border-color:var(--green)}
+/* Misc */
+.hidden{display:none!important}
+.empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#58a6ff88}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.main{padding:12px}.hdr{padding:10px 12px}.sess-nav{padding:10px 12px}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1>☕ INF-304 Java Reviewer</h1>
+  <div class="search-wrap"><input type="search" id="srch" placeholder="Search exercises, tags, code…" autocomplete="off"></div>
+  <span class="stat" id="stat"></span>
+</div>
+<nav class="sess-nav" id="snav"></nav>
+<main class="main" id="main"></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+<script>
+const S=[
+{id:1,title:'Session 1',topic:'Basic Syntax & I/O',exercises:[
+{id:'ex11',title:'Hello World',desc:'Print text to the console',section:'Output',tags:['output'],files:[
+{n:'ex11.java',fin:false,code:`class ex11 {
+
+public static void main (String args[])
+{
+    System.out.print("Welcome to Java");
+}
+
+}`}]},
+
+{id:'ex121',title:'Print Statements & Escape Sequences',desc:'Multiple print statements; \\t and \\n escape sequences',section:'Output',tags:['output'],files:[
+{n:'ex121.java',fin:false,code:`class ex121 {
+
+public static void main (String args[])
+{
+    System.out.print("Coffee");
+    System.out.print("Small 1.00");
+    System.out.print("Large 2.00");
+}
+
+}`},
+{n:'ex121f.java',fin:true,code:`class ex121f {
+
+public static void main (String args[])
+{
+    System.out.println("Coffee");
+    System.out.println("Small\\t 1.00");
+    System.out.println("Large\\n 2.00");
+}
+
+}`}]},
+
+{id:'ex122',title:'Scanner — User Input',desc:'Read a line of text from stdin using Scanner',section:'Input',tags:['input'],files:[
+{n:'ex122.java',fin:false,code:`import java.util.*;
+
+class ex122 {
+
+public static void main (String args[])
+{
+    Scanner in =  new Scanner(System.in);
+    System.out.println("Thank you for visiting us. What is your name?");
+    String name = in.nextLine();
+    System.out.println("Welcome, " + name);
+}
+
+}`},
+{n:'ex122f.java',fin:true,code:`import java.util.Scanner;
+
+class ex122f {
+
+public static void main (String args[])
+{
+    Scanner in =  new Scanner(System.in);
+    System.out.println("Thank you for visiting us. What is your name?");
+    String name = in.nextLine();
+    System.out.println("Welcome, " + name);
+}
+
+}`}]},
+
+{id:'ex111',title:'Multiply Command-Line Arguments',desc:'Parse and multiply two args[] values with parseInt',section:'CLI Args',tags:['input','types'],files:[
+{n:'ex111.java',fin:false,code:`class ex111 {
+
+public static void main (String args[])
+{
+    String zero = args[0];
+    String one  = args[1];
+
+    System.out.println(Integer.parseInt(zero) * Integer.parseInt(one));
+}
+
+}`},
+{n:'ex111f.java',fin:true,code:`class ex111f {
+
+public static void main (String args[])
+{
+    String zero = args[0];
+    String one  = args[1];
+
+    System.out.println(Integer.parseInt(zero) * Integer.parseInt(one));
+}
+
+}`}]},
+
+{id:'ex112',title:'Product Class with Constructor',desc:'Define a class with fields and a constructor; instantiate two objects',section:'CLI Args',tags:['classes'],files:[
+{n:'ex112.java',fin:false,code:`class ex112 {
+
+public static void main (String args[])
+{
+    Product product1 = new Product("Coffee", "Medium Roast", 9.99);
+    Product product2 = new Product("Tea", "Organic White", 7.99);
+
+    System.out.println(product1.name);
+    System.out.println(product2.name);
+}
+
+}
+
+class Product {
+
+    String type;
+    String name;
+    double price;
+
+    Product(String type, String name, double price) {
+        this.type = type;
+        this.name = name;
+        this.price = price;
+    }
+}`},
+{n:'ex112f.java',fin:true,code:`class ex112f {
+
+public static void main (String args[])
+{
+    Product product1 = new Product("Coffee", "Medium Roast", 9.99);
+    Product product2 = new Product("Tea", "Organic White", 7.99);
+
+    System.out.println(product1.name);
+    System.out.println(product2.name);
+}
+
+}
+
+class Product {
+
+    String type;
+    String name;
+    double price;
+
+    Product(String type, String name, double price) {
+        this.type = type;
+        this.name = name;
+        this.price = price;
+    }
+}`}]},
+
+{id:'ex131',title:'If / Else Scope',desc:'Variable scope issues inside if-else blocks; static variable fix',section:'Conditionals & Scope',tags:['conditionals'],files:[
+{n:'ex131.java',fin:false,code:`class ex131 {
+
+public static void main (String args[])
+{
+
+}
+
+}`},
+{n:'ex131a.java',fin:false,code:`class ex131a {
+
+public static void main (String args[])
+{
+    String location = "Utah";
+
+    if (location == "Utah")
+    {
+        double salesTax = .047;
+    }
+
+    System.out.println("Your sales tax rate is " + salesTax * 100 + "%.");
+}
+
+}`},
+{n:'ex131af.java',fin:true,code:`class ex131af {
+
+public static void main (String args[])
+{
+    String location = "Utah";
+
+        if (location == "Utah")
+        {
+            double salesTax = .047;
+            System.out.println("Your sales tax rate is " + salesTax * 100 + "%.");
+        }
+
+
+}
+
+}`},
+{n:'ex131b.java',fin:false,code:`class ex131b {
+
+public static void main (String args[])
+{
+    String location = "Utah";
+
+        if (location == "Utah")
+        {
+            double salesTax = .047;
+
+        }
+        else
+        {
+            salesTax = .05;
+        }
+        System.out.println("Your sales tax rate is " + salesTax * 100 + "%.");
+
+
+}
+
+}`},
+{n:'ex131bf.java',fin:true,code:`class ex131bf {
+
+public static void main (String args[])
+{
+    String location = "Utah";
+    double salesTax = 0;
+
+        if (location == "Utah")
+        {
+            salesTax = .047;
+
+        }
+        else
+        {
+            salesTax = .05;
+        }
+
+        System.out.println("Your sales tax rate is " + salesTax * 100 + "%.");
+
+
+}
+
+}`},
+{n:'ex131c.java',fin:false,code:`class ex131c {
+
+public static void main (String args[])
+{
+    String location = "Arizona";
+    double salesTax = 0;
+
+        if (location == "Utah")
+        {
+            salesTax = .047;
+
+        }
+        else
+        {
+            otherStates();
+        }
+
+        System.out.println("Your sales tax rate is " + salesTax * 100 + "%.");
+
+
+}
+
+public static double otherStates() {
+    salesTax = .05;
+    return salesTax;
+}
+
+}`},
+{n:'ex131cf.java',fin:true,code:`class ex131cf {
+
+    static double salesTax = 0;
+
+public static void main (String args[])
+{
+    String location = "Arizona";
+
+
+        if (location == "Utah")
+        {
+            salesTax = .047;
+
+        }
+        else
+        {
+            otherStates();
+        }
+
+        System.out.println("Your sales tax rate is " + salesTax * 100 + "%.");
+
+
+}
+
+public static double otherStates() {
+    salesTax = .05;
+    return salesTax;
+}
+
+}`}]}
+]},
+
+{id:2,title:'Session 2',topic:'Data Types, Strings & Collections',exercises:[
+{id:'ex211',title:'Primitive Data Types',desc:'Declare all 8 primitive types: byte, char, int, double, short, long, float, boolean',section:'Primitives',tags:['types'],files:[
+{n:'ex211.java',fin:false,code:`class ex211 {
+
+public static void main (String args[])
+{
+    byte bagSize = 12;
+    char roast = 'M';
+    int beans = 360;
+    double price = 8.99;
+    short qtySold = 3000;
+    long annualQtySold = 36000l;
+    float costPerOz = .49f;
+    boolean caffeine = true;
+}
+
+}`},
+{n:'ex211f.java',fin:true,code:`class ex211f {
+
+public static void main (String args[])
+{
+    byte bagSize = 12;
+    char roast = 'M'; // char is one character using single quotes
+    int beans = 360;
+    double price = 8.99;
+    short qtySold = 3000;
+    long annualQtySold = 36000l;
+    float costPerOz = .49f;
+    boolean caffeine = true;
+}
+
+}`}]},
+
+{id:'ex212',title:'Arithmetic on Primitives',desc:'Multiply byte × float; observe implicit type promotion',section:'Primitives',tags:['types','operators'],files:[
+{n:'ex212.java',fin:false,code:`class ex212 {
+
+public static void main (String args[])
+{
+    byte bagSize = 12;
+    char roast = 'M';
+    int beans = 360;
+    double price = 8.99;
+    short qtySold = 3000;
+    long annualQtySold = 36000l;
+    float costPerOz = .49f;
+    boolean caffeine = true;
+
+    System.out.println(bagSize * costPerOz);
+}
+
+}`},
+{n:'ex212f.java',fin:true,code:`class ex212f {
+
+public static void main (String args[])
+{
+    byte bagSize = 12;
+    char roast = 'M';
+    int beans = 360;
+    double price = 8.99;
+    short qtySold = 3000;
+    long annualQtySold = 36000l;
+    float costPerOz = 5555555.55f;
+    boolean caffeine = true;
+
+    System.out.println(bagSize * costPerOz);
+}
+
+}`}]},
+
+{id:'ex214',title:'Wrapper Classes & Boxing',desc:'Integer and Boolean wrapper classes; booleanValue(); auto-unboxing in comparison',section:'Primitives',tags:['types'],files:[
+{n:'ex214.java',fin:false,code:`class ex214 {
+
+public static void main (String args[])
+{
+    int qty = 20;
+    Integer reorder = new Integer("10");
+
+    Boolean needsReorder = new Boolean("false");
+    boolean mustReorder = needsReorder.booleanValue();
+
+    if (qty < reorder) {
+        mustReorder = true;
+    }
+
+    System.out.println(mustReorder);
+    System.out.println(reorder);
+
+}
+
+}`},
+{n:'ex214f.java',fin:true,code:`class ex214f {
+
+public static void main (String args[])
+{
+    int qty = 20;
+    Integer reorder = new Integer("10");
+
+    Boolean needsReorder = new Boolean("false");
+    boolean mustReorder = needsReorder.booleanValue();
+
+    if (qty < reorder) {
+        mustReorder = true;
+    }
+
+    System.out.println(mustReorder);
+
+}
+
+}`}]},
+
+{id:'ex221',title:'String Comparison & Methods',desc:'!= comparison, concatenation, toUpperCase(), length()',section:'Strings',tags:['strings'],files:[
+{n:'ex221.java',fin:false,code:`class ex221 {
+
+public static void main (String args[])
+{
+    String product1 = "House Blend";
+    String product2 = "Sumatra";
+
+    System.out.println(product1 != product2);
+    System.out.println("Our house specials today are " + product1 + " and " + product2 + ".");
+    System.out.println("Our house specials today are " + product1.toUpperCase() + " and " + product2.toUpperCase());
+    System.out.println(product1.length());
+}
+
+}`},
+{n:'ex221f.java',fin:true,code:`class ex221f {
+
+public static void main (String args[])
+{
+    String product1 = "House Blend";
+    String product2 = "Sumatra";
+
+    System.out.println(product1 != product2);
+    System.out.println("Our house specials today are " + product1 + " and " + product2 + ".");
+    System.out.println("Our house specials today are " + product1.toUpperCase() + " and " + product2.toUpperCase()+ ".");
+    System.out.println(product1.length());
+}
+
+}`}]},
+
+{id:'ex222',title:'String Formatting',desc:'Padded column output using String.format() with %20s',section:'Strings',tags:['strings','output'],files:[
+{n:'ex222.java',fin:false,code:`class ex222 {
+
+public static void main (String args[])
+{
+    String product1 = "House Blend";
+    String product2 = "Sumatra";
+
+    System.out.println("|"+ product1 + "|");
+}
+
+}`},
+{n:'ex222f.java',fin:true,code:`class ex222f {
+
+public static void main (String args[])
+{
+    String product1 = "House Blend";
+    String product2 = "Sumatra";
+
+    System.out.println("|"+ product1 + "|");
+    System.out.println(String.format("|%20s|", product2));
+}
+
+}`}]},
+
+{id:'ex223',title:'String Methods: trim / substring / charAt',desc:'trim() removes whitespace; substring() extracts; charAt() gets single character',section:'Strings',tags:['strings'],files:[
+{n:'ex223.java',fin:false,code:`class ex223 {
+
+public static void main (String args[])
+{
+    String tea1 = "0001     Green Tea      7.99     ";
+    String tea2 = "0002     White Tea      8.99     ";
+
+    System.out.println(tea1.trim());
+    System.out.println(tea2.substring(10,18));
+}
+
+}`},
+{n:'ex223f.java',fin:true,code:`class ex223f {
+
+public static void main (String args[])
+{
+    String tea1 = "0001     Green Tea      7.99     ";
+    String tea2 = "0002     White Tea      8.99     ";
+
+    System.out.println(tea1.trim());
+    System.out.println(tea2.substring(9,18));
+    System.out.println(tea1.charAt(3));
+}
+
+}`}]},
+
+{id:'ex224',title:'Int to String Conversion',desc:'Integer.toString() and String.valueOf() to convert int in a sentence',section:'Strings',tags:['strings','casting'],files:[
+{n:'ex224.java',fin:false,code:`class ex224 {
+
+public static void main (String args[])
+{
+    String name = "Tracy";
+    int qty = 5;
+    String product = "Mint Cocoa";
+
+    System.out.println (name + ", thank you for your order of " + Integer.toString(qty) + " cans of " + product + ".");
+}
+
+}`},
+{n:'ex224f.java',fin:true,code:`class ex224f {
+
+public static void main (String args[])
+{
+    String name = "Tracy";
+    int qty = 5;
+    String product = "Mint Cocoa";
+
+    System.out.println (name + ", thank you for your order of " + Integer.toString(qty) + " cans of " + product + ".");
+    System.out.println (name + ", thank you for your order of " + String.valueOf(qty) + " cans of " + product + ".");
+}
+
+}`}]},
+
+{id:'ex225',title:'if-else-if: String Assignment',desc:'Assign status string based on qty thresholds; note semicolon bug in "f" version',section:'Strings',tags:['strings','conditionals'],files:[
+{n:'ex225.java',fin:false,code:`class ex225 {
+
+public static void main (String args[])
+{
+    String status="";
+    int totalQty = 70;
+
+    if(totalQty >=100)
+    {
+        status = "Gold";
+    }
+    else if(totalQty >=50)
+    {
+        status = "Silver";
+    }
+    System.out.println(status);
+}
+
+}`},
+{n:'ex225f.java',fin:true,code:`class ex225f {
+
+public static void main (String args[])
+{
+    String status;
+    int totalQty = 70;
+
+    if(totalQty >=100)
+    {
+        status = "Gold";
+    }
+    else if(totalQty >=50);
+    {
+        status = "Silver";
+    }
+    System.out.println(status);
+}
+
+}`}]},
+
+{id:'ex226',title:'Null String Handling',desc:'Avoid null reference: initialize status to a default value',section:'Strings',tags:['strings'],files:[
+{n:'ex226.java',fin:false,code:`class ex226 {
+
+public static void main (String args[])
+{
+    String status;
+    int totalQty = 70;
+
+    if(totalQty >=100)
+    {
+        status = "Gold";
+    }
+    else if(totalQty >=50)
+    {
+        status = "Silver";
+    }
+    else {
+        status = null;
+    }
+    System.out.println(status);
+}
+
+}`},
+{n:'ex226f.java',fin:true,code:`class ex226f {
+
+public static void main (String args[])
+{
+    String status = "Unknown";
+    int totalQty = 40;
+
+    if(totalQty >=100)
+    {
+        status = "Gold";
+    }
+    else if(totalQty >=50)
+    {
+        status = "Silver";
+    }
+    else {
+        status = null;
+    }
+    System.out.println(status);
+}
+
+}`}]},
+
+{id:'ex231',title:'Arrays: 1D, 2D & Literal Init',desc:'String arrays declared with new; 2D array; shorthand literal { } initialization; for-each loop',section:'Arrays & Collections',tags:['arrays'],files:[
+{n:'ex231a.java',fin:false,code:`class ex231a {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    System.out.println(cocoaBrands[1]);
+
+    for (String cocoa: cocoaBrands) {
+        System.out.println(cocoa);
+    }
+
+}
+
+}`},
+{n:'ex231af.java',fin:true,code:`class ex231af {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    System.out.println(cocoaBrands[1]);
+
+    for (String cocoa: cocoaBrands) {
+        System.out.println(cocoa);
+    }
+
+}
+
+}`},
+{n:'ex231b.java',fin:false,code:`class ex231b {
+
+public static void main (String args[])
+{
+    String [] [] products = new String[2][3];
+
+    products [0][0] = "Cocoa - Regular";
+    products [0][1] = "Cocoa - Dark";
+    products [0][2] = "Cocoa - Mint";
+    products [1][0] = "Coffee - House";
+    products [1][1] = "Coffee - Decaf";
+    products [1][2] = "Coffee - French Vanilla";
+
+    System.out.println(products[1][1]);
+
+}
+
+}`},
+{n:'ex231c.java',fin:false,code:`class ex231c {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = {"Regular", "Dark Chocolate", null, "Sugar free"};
+
+    System.out.println(cocoaBrands[1]);
+
+    for (String cocoa: cocoaBrands) {
+        System.out.println(cocoa);
+    }
+
+}
+
+}`},
+{n:'ex231cf.java',fin:true,code:`class ex231cf {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = {"Regular", "Dark Chocolate", null, "Sugar free"};
+
+    System.out.println(cocoaBrands[1]);
+
+    for (String cocoa: cocoaBrands) {
+        System.out.println(cocoa);
+    }
+
+}
+
+}`}]},
+
+{id:'ex232',title:'ArrayList with Iterator',desc:'ArrayList<String>: add(), get(), remove(), iterate with Iterator',section:'Arrays & Collections',tags:['collections'],files:[
+{n:'ex232.java',fin:false,code:`import java.util.*;
+
+class ex232 {
+
+public static void main (String args[])
+{
+   ArrayList<String> cups = new ArrayList<>();
+
+   cups.add("Silver");
+   cups.add("Black");
+   cups.add("#1");
+   cups.add("Maroon");
+
+   System.out.println(cups.get(1));
+
+   Iterator cupList = cups.iterator();
+   while(cupList.hasNext())
+   {
+       System.out.println(cupList.next());
+   }
+}
+
+}`},
+{n:'ex232f.java',fin:true,code:`import java.util.*;
+
+class ex232f {
+
+public static void main (String args[])
+{
+   ArrayList<String> cups = new ArrayList<>();
+
+   cups.add("Silver");
+   cups.add("Black");
+   cups.add("#1");
+   cups.add("Maroon");
+
+   System.out.println(cups.get(1));
+
+   Iterator cupList = cups.iterator();
+   while(cupList.hasNext())
+   {
+       System.out.println(cupList.next());
+   }
+
+   cups.remove("Maroon");
+
+   cupList = cups.iterator();
+   while(cupList.hasNext())
+   {
+       System.out.println(cupList.next());
+   }
+}
+
+}`}]},
+
+{id:'ex241',title:'Type Casting & Parsing',desc:'Cast double→int; parse String to double and int; String.valueOf()',section:'Type Conversion',tags:['casting','types'],files:[
+{n:'ex241.java',fin:false,code:`class ex241 {
+
+public static void main (String args[])
+{
+
+}
+
+}`},
+{n:'ex241a.java',fin:false,code:`class ex241a {
+
+public static void main (String args[])
+{
+   double bagSize = 12.9;
+   int bagQty = 4;
+   int bagSizeWhole = (int)(bagSize);
+   String bagSizeString = String.valueOf(bagSize);
+
+   System.out.println(bagSize);
+   System.out.println(bagSizeWhole);
+   System.out.println(bagSizeString);
+   System.out.println(bagSize * bagQty);
+
+}
+
+}`},
+{n:'ex241af.java',fin:true,code:`class ex241af {
+
+public static void main (String args[])
+{
+   double bagSize = 12.9;
+   int bagQty = 4;
+   int bagSizeWhole = (int)(bagSize);
+   String bagSizeString = String.valueOf(bagSize);
+
+   System.out.println(bagSize);
+   System.out.println(bagSizeWhole);
+   System.out.println(bagSizeString);
+   System.out.println(bagSize * bagQty);
+
+}
+
+}`},
+{n:'ex241b.java',fin:false,code:`class ex241b {
+
+public static void main (String args[])
+{
+   String proposedBagSizeString = new String("11.8");
+   double proposedBagSize = Double.parseDouble(proposedBagSizeString);
+   int proposedBagSizeWhole = Integer.parseInt(proposedBagSizeString);
+
+   System.out.println(proposedBagSize);
+   System.out.println(proposedBagSizeWhole);
+}
+
+}`},
+{n:'ex241bf.java',fin:true,code:`class ex241bf {
+
+public static void main (String args[])
+{
+   String proposedBagSizeString = new String("11.8");
+   double proposedBagSize = Double.parseDouble(proposedBagSizeString);
+   //int proposedBagSizeWhole = Integer.parseInt(proposedBagSizeString);
+
+   System.out.println(proposedBagSize);
+   //System.out.println(proposedBagSizeWhole);
+}
+
+}`}]},
+
+{id:'ex251',title:'Arithmetic & Compound Operators',desc:'+, -, *, /, % operators; compound +=, *=; operator precedence with parentheses',section:'Operators',tags:['operators'],files:[
+{n:'ex251a.java',fin:false,code:`class ex251a {
+
+public static void main (String args[])
+{
+   int x = 15;
+   int y = 7;
+
+   System.out.println(x + y);
+   System.out.println(x - y);
+   System.out.println(x * y);
+   System.out.println(x / y);
+   System.out.println(x % y);
+}
+
+}`},
+{n:'ex251af.java',fin:true,code:`class ex251af {
+
+public static void main (String args[])
+{
+   int x = 15;
+   int y = 7;
+
+   System.out.println(x + y);
+   System.out.println(x - y);
+   System.out.println(x * y);
+   System.out.println(x / y);
+   System.out.println(x % y);
+}
+
+}`},
+{n:'ex251b.java',fin:false,code:`class ex251b {
+
+public static void main (String args[])
+{
+   int x = 15;
+   int y = 7;
+
+   x += y; // same as x = x + y
+   System.out.println(x);
+
+   x *= y;
+   System.out.println(x);
+
+   x -= y;
+   System.out.println(x);
+
+   x /= y;
+   System.out.println(x);
+}
+
+}`},
+{n:'ex251bf.java',fin:true,code:`class ex251b {
+
+public static void main (String args[])
+{
+   int x = 15;
+   int y = 7;
+
+   x += y; // same as x = x + y
+   System.out.println(x);
+
+   x *= y;
+   System.out.println(x);
+
+   x -= y;
+   System.out.println(x);
+
+   x /= y;
+   System.out.println(x);
+}
+
+}`},
+{n:'ex251c.java',fin:false,code:`class ex251c {
+
+public static void main (String args[])
+{
+   int x = 15;
+   int y = 7;
+   int z = 3;
+
+   System.out.println(x + y * z);
+}
+
+}`},
+{n:'ex251cf.java',fin:true,code:`class ex251cf {
+
+public static void main (String args[])
+{
+   int x = 15;
+   int y = 7;
+   int z = 3;
+
+   System.out.println(x + y * z);
+   System.out.println((x + y) * z);
+}
+
+}`}]}
+]},
+
+{id:3,title:'Session 3',topic:'Decision Structures & Loops',exercises:[
+{id:'ex311',title:'if / else-if / switch Statements',desc:'Simple if, if-else, if-else-if chain, switch with fall-through vs break',section:'Decision Structures',tags:['conditionals'],files:[
+{n:'ex311a.java',fin:false,code:`class ex311a {
+
+public static void main (String args[])
+{
+    int amount = 5;
+
+    if(amount >=2) {
+        System.out.print("Enjoy a free coaster with your order.");
+    }
+}
+
+}`},
+{n:'ex311af.java',fin:true,code:`class ex311af {
+
+public static void main (String args[])
+{
+    int amount = 5;
+
+    if(amount >=2) {
+        System.out.print("Enjoy a free coaster with your order.");
+    }
+}
+
+}`},
+{n:'ex311b.java',fin:false,code:`class ex311b {
+
+public static void main (String args[])
+{
+    int amount = 2;
+
+    if(amount >2) {
+        System.out.print("Enjoy a free coaster with your order.");
+    }
+}
+
+}`},
+{n:'ex311bf.java',fin:true,code:`class ex311bf {
+
+public static void main (String args[])
+{
+    int amount = 2;
+
+    if(amount >2) {
+        System.out.print("Enjoy a free coaster with your order.");
+    }
+    else {
+        System.out.print("Thank you for your order.");
+    }
+}
+
+}`},
+{n:'ex311c.java',fin:false,code:`class ex311c {
+
+public static void main (String args[])
+{
+    int amount = 2;
+
+    if(amount >2) {
+        System.out.print("Enjoy a free coaster with your order.");
+    }
+    else {
+        System.out.print("Thank you for your order.");
+    }
+}
+
+}`},
+{n:'ex311cf.java',fin:true,code:`class ex311cf {
+
+public static void main (String args[])
+{
+    int amount = 1;
+
+    if(amount >2) {
+        System.out.print("Enjoy a free coaster with your order");
+    }
+    else if(amount == 2) {
+        System.out.print("Take $1 off of your next order.");
+    }
+    else {
+        System.out.print("Thank you for your order.");
+    }
+}
+
+}`},
+{n:'ex311d.java',fin:false,code:`class ex311d {
+
+public static void main (String args[])
+{
+    int amount = 1;
+
+    switch(amount) {
+        case 4:
+        System.out.println("Four bag order? We'll throw in another bag for free");
+
+        case 3:
+        System.out.println("Three bags? We'll toss in another 1/2 bag.");
+
+        case 2:
+        System.out.println("Two bags? Enjoy a free coaster on us.");
+
+        default:
+        System.out.println("Thank you for your order.");
+    }
+}
+
+}`},
+{n:'ex311df.java',fin:true,code:`class ex311df {
+
+public static void main (String args[])
+{
+    int amount = 3;
+
+    switch(amount) {
+        case 4:
+        System.out.println("Four bag order? We'll throw in another bag for free");
+        break;
+
+        case 3:
+        System.out.println("Three bags? We'll toss in another 1/2 bag.");
+        break;
+
+        case 2:
+        System.out.println("Two bags? Enjoy a free coaster on us.");
+        break;
+
+        default:
+        System.out.println("Thank you for your order.");
+    }
+}
+
+}`}]},
+
+{id:'ex312',title:'Ternary Operator',desc:'Compact if-else using condition ? valueA : valueB',section:'Decision Structures',tags:['conditionals','operators'],files:[
+{n:'ex312.java',fin:false,code:`class ex312 {
+
+public static void main (String args[])
+{
+    int amount = 2;
+
+    String msg = amount > 2 ? "Enjoy a free coaster with your order" : "Thank you for your order";
+
+    System.out.println(msg);
+}
+
+}`},
+{n:'ex312f.java',fin:true,code:`class ex312f {
+
+public static void main (String args[])
+{
+    int amount = 2;
+
+    String msg = amount > 2 ? "Enjoy a free coaster with your order" : "Thank you for your order";
+
+    System.out.println(msg);
+}
+
+}`}]},
+
+{id:'ex313',title:'Nested if Statements',desc:'Nested if-else for discount logic based on customer status and bag quantity',section:'Decision Structures',tags:['conditionals'],files:[
+{n:'ex313.java',fin:false,code:`class ex313 {
+
+public static void main (String args[])
+{
+    String customerStatus = "Gold";
+    int bagQty = 8;
+    double discount = 0;
+    String discountMessage;
+
+    if(customerStatus == "Gold")
+    {
+        if(bagQty >= 10) {
+            discount = .10;
+        }
+        else{
+            discount = .05;
+        }
+    }
+    else if (customerStatus == "Silver")
+    {
+        if(bagQty >= 10) {
+            discount = .05;
+        }
+        else{
+            discount = .02;
+        }
+    }
+    discountMessage = "Congratulations. Your " + customerStatus + " status gets you a " + discount * 100 + "% discount.";
+    System.out.println(discountMessage);
+}
+
+}`},
+{n:'ex313f.java',fin:true,code:`class ex313f {
+
+public static void main (String args[])
+{
+    String customerStatus = "Gold";
+    int bagQty = 8;
+    double discount = 0;
+    String discountMessage;
+
+    if(customerStatus == "Gold")
+    {
+        if(bagQty >= 10) {
+            discount = .10;
+        }
+        else{
+            discount = .05;
+        }
+    }
+    else if (customerStatus == "Silver")
+    {
+        if(bagQty >= 10) {
+            discount = .05;
+        }
+        else{
+            discount = .02;
+        }
+    }
+    discountMessage = "Congratulations. Your " + customerStatus + " status gets you a " + discount * 100 + "% discount.";
+    System.out.println(discountMessage);
+}
+
+}`}]},
+
+{id:'ex314',title:'Logical & Relational Operators',desc:'&&, || operators; ==, !=, >=, <=, >, < relational comparisons',section:'Decision Structures',tags:['operators','conditionals'],files:[
+{n:'ex314a.java',fin:false,code:`class ex314af {
+
+public static void main (String args[])
+{
+    String frRoast = "in";
+    String medRoast = "in";
+    String italRoast = "out";
+
+
+    if (frRoast == "in" && italRoast == "in") {
+        System.out.println("Both darks are in stock.");
+    }
+    else if (frRoast == "in" || italRoast == "in") {
+        System.out.println("One dark is in stock.");
+    }
+
+}
+
+}`},
+{n:'ex314af.java',fin:true,code:`class ex314af {
+
+public static void main (String args[])
+{
+    String frRoast = "in";
+    String medRoast = "in";
+    String italRoast = "out";
+    String italRoastDecaf = "out";
+    String houseDecaft = "in";
+
+    boolean bothDarks, oneDark;
+
+    bothDarks = frRoast == "in" && italRoast == "in";
+    oneDark = frRoast == "in" || italRoast == "in";
+
+    System.out.println(bothDarks + "\\t" + oneDark);
+}
+
+}`},
+{n:'ex314b.java',fin:false,code:`class ex314b {
+
+public static void main (String args[])
+{
+    double italRoastPrice = 9.99;
+    double frenchRoastPrice = 8.99;
+
+    System.out.println(italRoastPrice == frenchRoastPrice);
+    System.out.println(italRoastPrice != frenchRoastPrice);
+    System.out.println(italRoastPrice >= frenchRoastPrice);
+    System.out.println(italRoastPrice <= frenchRoastPrice);
+    System.out.println(italRoastPrice > frenchRoastPrice);
+    System.out.println(italRoastPrice < frenchRoastPrice);
+}
+
+}`}]},
+
+{id:'ex321',title:'while, do-while & for Loops',desc:'while loop, do-while (runs at least once), for loop with index, for-each over array',section:'Loops',tags:['loops'],files:[
+{n:'ex321.java',fin:false,code:`class ex321 {
+
+public static void main (String args[])
+{
+   int totalOrders = 4;
+   int orderCount = 1;
+
+   while(orderCount < totalOrders)
+   {
+        System.out.println("An order will be sent to you in " + orderCount * 30 + " days.");
+        orderCount++;
+   }
+}
+
+}`},
+{n:'ex321b.java',fin:false,code:`class ex321b {
+
+public static void main (String args[])
+{
+   int totalOrders = 1;
+   int orderCount = 1;
+
+   while(orderCount < totalOrders)
+   {
+        System.out.println("An order will be sent to you in " + orderCount * 30 + " days.");
+        orderCount++;
+   }
+}
+
+}`},
+{n:'ex321bf.java',fin:true,code:`class ex321bf {
+
+public static void main (String args[])
+{
+   int totalOrders = 1;
+   int orderCount = 1;
+
+   do
+   {
+        System.out.println("An order will be sent to you in " + orderCount * 30 + " days.");
+        orderCount++;
+   }
+   while(orderCount < totalOrders);
+}
+
+}`},
+{n:'ex321c.java',fin:false,code:`class ex321c {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+   for (int c=0; c<cocoaBrands.length; c++) {
+        System.out.println(cocoaBrands[c]);
+    }
+}
+
+}`},
+{n:'ex321cf.java',fin:true,code:`class ex321cf {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+   for (int c=0; c<cocoaBrands.length; c++) {
+        System.out.println(cocoaBrands[c]);
+    }
+}
+
+}`},
+{n:'ex321d.java',fin:false,code:`class ex321d {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    System.out.println(cocoaBrands[1]);
+
+    for (String cocoa: cocoaBrands) {
+        System.out.println(cocoa);
+    }
+}
+
+}`},
+{n:'ex321df.java',fin:true,code:`class ex321df {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    for (String cocoa: cocoaBrands) {
+        System.out.println(cocoa);
+    }
+}
+
+}`},
+{n:'ex321e.java',fin:false,code:`class ex321e {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+   for (int c=0; c<cocoaBrands.length; c++) {
+        System.out.println(cocoaBrands[c]);
+    }
+}
+
+}`},
+{n:'ex321ef.java',fin:true,code:`class ex321ef {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+   for (int c=0; c<cocoaBrands.length; c++) {
+        System.out.println(c+ ". " + cocoaBrands[c]);
+    }
+}
+
+}`}]},
+
+{id:'ex322',title:'break Statement',desc:'Break out of a loop early when a null element is found',section:'Loops',tags:['loops'],files:[
+{n:'ex322a.java',fin:false,code:`class ex322a {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+   for (int c=0; c<cocoaBrands.length; c++) {
+        System.out.println(cocoaBrands[c]);
+    }
+}
+
+}`},
+{n:'ex322af.java',fin:true,code:`class ex322af {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+   for (int c=0; c<cocoaBrands.length; c++) {
+       if (cocoaBrands[c] == null) {
+           break;
+       }
+        System.out.println(cocoaBrands[c]);
+    }
+}
+
+}`},
+{n:'ex322b.java',fin:false,code:`class ex322b {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+   for (int c=0; c<cocoaBrands.length; c++) {
+       if (cocoaBrands[c] == null) {
+           break;
+       }
+        System.out.println(cocoaBrands[c]);
+    }
+}
+
+}`}]},
+
+{id:'ex323',title:'Nested for Loops',desc:'Outer loop over territories × inner loop over products',section:'Loops',tags:['loops'],files:[
+{n:'ex323.java',fin:false,code:`class ex323 {
+
+public static void main (String args[])
+{
+
+    String [] territories = new String[2];
+    territories[0] = "U.S.";
+    territories[1] = "International";
+
+    String [] cocoaBrands = new String[4];
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = "Mint Chocolate";
+    cocoaBrands[3] = "Sugar free";
+
+   for (int t=0; t<territories.length; t++){
+    for (int c=0; c<cocoaBrands.length; c++) {
+        System.out.println(territories[t] + "-" + cocoaBrands[c]);
+    }
+   }
+}
+
+}`},
+{n:'ex323f.java',fin:true,code:`class ex323f {
+
+public static void main (String args[])
+{
+
+    String [] territories = new String[2];
+    territories[0] = "U.S.";
+    territories[1] = "International";
+
+    String [] cocoaBrands = new String[4];
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = "Mint Chocolate";
+    cocoaBrands[3] = "Sugar free";
+
+   for (int t=0; t<territories.length; t++){
+    for (int c=0; c<cocoaBrands.length; c++) {
+        System.out.println(territories[t] + "-" + cocoaBrands[c]);
+    }
+   }
+}
+
+}`}]},
+
+{id:'ex324',title:'continue & Increment / Decrement',desc:'continue skips a combination in nested loops; post/pre ++ and -- operators',section:'Loops',tags:['loops','operators'],files:[
+{n:'ex324a.java',fin:false,code:`class ex324a {
+
+public static void main (String args[])
+{
+    String [] territories = new String[2];
+    territories[0] = "U.S.";
+    territories[1] = "International";
+
+    String [] cocoaBrands = new String[4];
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = "Mint Chocolate";
+    cocoaBrands[3] = "Sugar free";
+
+   for (int t=0; t<territories.length; t++){
+    for (int c=0; c<cocoaBrands.length; c++) {
+        if(territories[t] == "International" && cocoaBrands[c] == "Sugar free")
+        {
+            continue;
+        }
+        System.out.println(territories[t] + "-" + cocoaBrands[c]);
+    }
+   }
+}
+
+}`},
+{n:'ex324b.java',fin:false,code:`class ex324b {
+
+public static void main (String args[])
+{
+   int x = 5;
+   int y = 7;
+
+   System.out.println(x++); // print x and then increase by one
+   System.out.println(++x); // increase x by one and then print it
+
+   //System.out.println(y--); // print y and decrease by one
+   //System.out.println(--y); // decrease y by one and then print it
+}
+
+}`},
+{n:'ex324bf.java',fin:true,code:`class ex324bf {
+
+public static void main (String args[])
+{
+   int x = 5;
+   int y = 7;
+
+   //System.out.println(x++); // print x and then increase by one
+   //System.out.println(++x); // increase x by one and then print it
+
+   System.out.println(y--); // print y and decrease by one
+   System.out.println(--y); // decrease y by one and then print it
+}
+
+}`}]}
+]},
+
+{id:4,title:'Session 4',topic:'Object-Oriented Programming',exercises:[
+{id:'Tea1',title:'Tea1 — Base Class & Inheritance',desc:'Tea1 base class with protected/public fields; GourmetTea1 subclass via extends',section:'Tea Class Series',tags:['classes','inheritance','oop'],files:[
+{n:'Tea1.java',fin:false,code:`public class Tea1
+{
+
+// objective 4.2.1
+
+protected int teaID;
+public String teaType;
+public String teaName;
+public double teaPrice;
+private double salePrice = teaPrice * .7;
+
+Tea1 (int teaID, String teaType, String teaName, double teaPrice) {
+    this.teaID = teaID;
+    this.teaType = teaType;
+    this.teaName = teaName;
+    this.teaPrice = teaPrice;
+    this.salePrice = teaPrice * .7;
+}
+Tea1() {
+
+}
+
+public static void main (String args[])
+{
+   Tea1 t1 = new Tea1(1, "Herbal", "Mint Green", 9.99);
+   System.out.println("Our first tea is " + t1.teaName + " sells for " + t1.teaPrice + " and is on sale now for " + String.format("%.2f",t1.salePrice));
+
+   GourmetTea1 gt1 = new GourmetTea1(2, "Herbal", "Super Lotus", "Lotus");
+   System.out.println("We have a new gourmet tea called " + gt1.teaName + " for " + gt1.teaPrice + ".");
+
+}
+
+}
+
+class GourmetTea1 extends Tea1
+{
+    public String gourmetBrand;
+
+    GourmetTea1 (int teaID, String teaType, String teaName, String gourmetBrand)
+    {
+        this.teaID = teaID;
+        this.teaType = teaType;
+        this.teaName = teaName;
+        this.gourmetBrand = gourmetBrand;
+        this.teaPrice = 12.99;
+        this.salePrice = 10.99;
+
+    }
+}`},
+{n:'tea1ex.java',fin:false,code:`public class Tea1 {
+
+// objective 4.2.1
+
+protected int teaID;
+public String teaType;
+public String teaName;
+public double teaPrice;
+private double salePrice = teaPrice * .7;
+
+void Tea1 (int teaID, string teaType, string teaName, string teaPrice) {
+    this.teaID = teaID;
+    this.teaType = teaType;
+    this.teaName = teaName;
+    this.teaPrice = teaPrice;
+    this.salePrice = teaPrice * .7;
+}
+
+public static void main (String args[])
+{
+   Tea1 t1 = new Tea1(1, "Herbal", "Mint Green", 9.99);
+   System.out.println("Our first tea is " + t1.teaName, " sells for " + t1.teaPrice + " and is on sale now for " + t1.salePrice);
+}
+
+}`}]},
+
+{id:'Tea2',title:'Tea2 — Static Field in Subclass',desc:'GourmetTea2 adds a static gourmetSalePrice shared across all instances',section:'Tea Class Series',tags:['classes','inheritance','static'],files:[
+{n:'Tea2.java',fin:false,code:`public class Tea2
+{
+
+// objectives 4.2.2 and 4.2.3
+
+protected int teaID;
+public String teaType;
+public String teaName;
+public double teaPrice;
+private double salePrice = teaPrice * .7;
+
+Tea2 (int teaID, String teaType, String teaName, double teaPrice) {
+    this.teaID = teaID;
+    this.teaType = teaType;
+    this.teaName = teaName;
+    this.teaPrice = teaPrice;
+    this.salePrice = teaPrice * .7;
+}
+Tea2() {
+
+}
+
+public static void main (String args[])
+{
+   Tea2 t2 = new Tea2(1, "Herbal", "Mint Green", 9.99);
+   System.out.println("Our first tea is " + t2.teaName + " sells for " + t2.teaPrice + " and is on sale now for " + String.format("%.2f",t2.salePrice));
+
+   GourmetTea2 gt2 = new GourmetTea2(2, "Herbal", "Super Lotus", "Lotus");
+   System.out.println("We have a new gourmet tea called " + gt2.teaName + " on sale for " + gt2.gourmetSalePrice + ".");
+
+}
+
+}
+
+class GourmetTea2 extends Tea2
+{
+    public String gourmetBrand;
+    static double gourmetSalePrice = 10.99;
+
+    GourmetTea2 (int teaID, String teaType, String teaName, String gourmetBrand)
+    {
+        this.teaID = teaID;
+        this.teaType = teaType;
+        this.teaName = teaName;
+        this.gourmetBrand = gourmetBrand;
+        this.teaPrice = 12.99;
+    }
+}`}]},
+
+{id:'Tea4',title:'Tea4 — Overloaded Constructors & final',desc:'GourmetTea4 has two constructors; static final gourmetShipping constant',section:'Tea Class Series',tags:['classes','inheritance','static'],files:[
+{n:'Tea4.java',fin:false,code:`public class Tea4
+{
+
+// objectives 4.2.4 and 4.2.5
+
+protected int teaID;
+public String teaType;
+public String teaName;
+public double teaPrice;
+private double salePrice = teaPrice * .7;
+
+Tea4 (int teaID, String teaType, String teaName, double teaPrice) {
+    this.teaID = teaID;
+    this.teaType = teaType;
+    this.teaName = teaName;
+    this.teaPrice = teaPrice;
+    this.salePrice = teaPrice * .7;
+}
+Tea4() {
+
+}
+
+public static void main (String args[])
+{
+   Tea4 t4 = new Tea4(1, "Herbal", "Mint Green", 9.99);
+   System.out.println("Our first tea is " + t4.teaName + " sells for " + t4.teaPrice + " and is on sale now for " + String.format("%.2f",t4.salePrice)+".");
+
+   GourmetTea4 gt4 = new GourmetTea4(2, "Herbal", "Super Lotus", "Lotus");
+   System.out.println("We have a new gourmet tea called " + gt4.teaName + " on sale for " + gt4.gourmetSalePrice + ".");
+
+   GourmetTea4 gt4a = new GourmetTea4(3, "Herbal", "Super Oolong");
+   System.out.println("We also have " + gt4a.gourmetBrand + " teas on sale for " + gt4a.gourmetSalePrice + " and ship for " + gt4a.gourmetShipping + ".");
+
+}
+
+}
+
+class GourmetTea4 extends Tea4
+{
+    public String gourmetBrand;
+    static double gourmetSalePrice = 10.99;
+    static final double gourmetShipping = 2.99;
+
+    GourmetTea4 (int teaID, String teaType, String teaName, String gourmetBrand)
+    {
+        this.teaID = teaID;
+        this.teaType = teaType;
+        this.teaName = teaName;
+        this.gourmetBrand = gourmetBrand;
+        this.teaPrice = 12.99;
+    }
+    GourmetTea4(int teaID, String teaType, String teaName)
+    {
+        this.teaID = teaID;
+        this.teaType = teaType;
+        this.teaName = teaName;
+        this.gourmetBrand = "Oolong";
+        this.teaPrice = 12.99;
+        this.gourmetSalePrice = 11.99;
+    }
+}`}]},
+
+{id:'ex41',title:'Product Class — Fields Only',desc:'Class definition with four fields and no constructor',section:'Classes & Constructors',tags:['classes','oop'],files:[
+{n:'ex41.java',fin:false,code:`class ex41 {
+
+public static void main (String args[])
+{
+
+}
+
+}
+
+class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+}`},
+{n:'ex41f.java',fin:true,code:`class ex41f {
+
+public static void main (String args[])
+{
+
+}
+
+}
+
+class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+}`}]},
+
+{id:'ex411',title:'Product Class with Constructor',desc:'Full 4-parameter constructor; instantiate and access productName field',section:'Classes & Constructors',tags:['classes','oop'],files:[
+{n:'ex411.java',fin:false,code:`class ex411 {
+
+public static void main (String args[])
+{
+
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+}
+class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+
+   }
+}
+
+}`},
+{n:'ex411f.java',fin:true,code:`class ex411f {
+
+public static void main (String args[])
+{
+
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+
+   }
+}
+
+}`}]},
+
+{id:'ex412',title:'Overloaded Constructors',desc:'Two constructors: 4-param with explicit price, 3-param with default price 9.99',section:'Classes & Constructors',tags:['classes','oop'],files:[
+{n:'ex412.java',fin:false,code:`class ex412 {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    Product prod2 = new Product(2, "Coffee", "House Blend");
+    System.out.println("The " + prod2.productName + " brand sells for " + prod2.price + ".");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+
+   Product(int productIdValue, String typeValue, String productNameValue)
+   {
+       productId = productIdValue;
+       type = typeValue;
+       productName = productNameValue;
+       price = 9.99;
+   }
+}
+
+}`},
+{n:'ex412f.java',fin:true,code:`class ex412f {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    Product prod2 = new Product(2, "Coffee", "House Blend");
+    System.out.println("The " + prod2.productName + " brand sells for " + prod2.price + ".");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+
+   Product(int productIdValue, String typeValue, String productNameValue)
+   {
+       productId = productIdValue;
+       type = typeValue;
+       productName = productNameValue;
+       price = 9.99;
+   }
+}
+
+}`}]},
+
+{id:'ex413',title:'Public Class & Public Inner Class',desc:'Outer class and inner class both declared public; required when saved as public class name',section:'Classes & Constructors',tags:['classes','oop'],files:[
+{n:'ex413.java',fin:false,code:`public class ex413 {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    Product prod2 = new Product(2, "Coffee", "House Blend");
+    System.out.println("The " + prod2.productName + " brand sells for " + prod2.price + ".");
+
+}
+ public static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+
+   Product(int productIdValue, String typeValue, String productNameValue)
+   {
+       productId = productIdValue;
+       type = typeValue;
+       productName = productNameValue;
+       price = 9.99;
+   }
+}
+
+}`},
+{n:'ex413f.java',fin:true,code:`public class ex413f {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    Product prod2 = new Product(2, "Coffee", "House Blend");
+    System.out.println("The " + prod2.productName + " brand sells for " + prod2.price + ".");
+
+}
+ public static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+
+   Product(int productIdValue, String typeValue, String productNameValue)
+   {
+       productId = productIdValue;
+       type = typeValue;
+       productName = productNameValue;
+       price = 9.99;
+   }
+}
+
+}`}]},
+
+{id:'ex414',title:'Constructor Chaining — this()',desc:'No-arg constructor delegates to the 4-param constructor using this()',section:'Classes & Constructors',tags:['classes','oop'],files:[
+{n:'ex414.java',fin:false,code:`class ex414 {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    Product prod3 = new Product();
+    System.out.println("The " + prod3.productName + " brand sells for " + prod3.price + ".");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+
+   Product()
+   {
+       this(3,"Coffee","Decaf",9.99);
+   }
+}
+
+}`},
+{n:'ex414f.java',fin:true,code:`class ex414f {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    Product prod3 = new Product();
+    System.out.println("The " + prod3.productName + " brand sells for " + prod3.price + ".");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+
+   Product()
+   {
+       this(3,"Coffee","Decaf",9.99);
+   }
+}
+
+}`}]},
+
+{id:'ex415',title:'Inheritance & Method Overriding',desc:'GourmetCoffee extends Product; override initStock() to return different value',section:'Classes & Constructors',tags:['classes','inheritance','oop'],files:[
+{n:'ex415a.java',fin:false,code:`class ex415a {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    GourmetCoffee gc1 = new GourmetCoffee(4, "Coffee", "Chocolate Donut", 9.99, "Chocolate");
+    System.out.println("We have a new " + gc1.flavor + " coffee.");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+   Product()
+   {
+
+   }
+}
+static class GourmetCoffee extends Product
+{
+    String flavor;
+
+    GourmetCoffee(int productIdValue, String typeValue, String productNameValue, double priceValue, String flavorValue)
+    {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+        flavor = flavorValue;
+    }
+}
+
+}`},
+{n:'ex415af.java',fin:true,code:`class ex415af {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    GourmetCoffee gc1 = new GourmetCoffee(4, "Coffee", "Chocolate Donut", 9.99, "Chocolate");
+    System.out.println("We have a new " + gc1.flavor + " coffee.");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+   Product()
+   {
+
+   }
+}
+static class GourmetCoffee extends Product
+{
+    String flavor;
+
+    GourmetCoffee(int productIdValue, String typeValue, String productNameValue, double priceValue, String flavorValue)
+    {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+        flavor = flavorValue;
+    }
+}
+
+}`},
+{n:'ex415b.java',fin:false,code:`class ex415b {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    GourmetCoffee gc1 = new GourmetCoffee(4, "Coffee", "Chocolate Donut", 9.99, "Chocolate");
+    System.out.println("We have a new " + gc1.flavor + " coffee with " + gc1.initStock() + " in stock.");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+    int initStock() {return 20;}
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+   Product()
+   {
+
+   }
+}
+static class GourmetCoffee extends Product
+{
+    String flavor;
+    int initStock() {return 10;}
+
+    GourmetCoffee(int productIdValue, String typeValue, String productNameValue, double priceValue, String flavorValue)
+    {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+        flavor = flavorValue;
+    }
+}
+
+public static int initStock()
+{
+    return 20;
+}
+
+}`},
+{n:'ex415bf.java',fin:true,code:`class ex415bf {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+    GourmetCoffee gc1 = new GourmetCoffee(4, "Coffee", "Chocolate Donut", 9.99, "Chocolate");
+    System.out.println("We have a new " + gc1.flavor + " coffee with " + gc1.initStock() + " in stock.");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+    int initStock() {return 20;}
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+   Product()
+   {
+
+   }
+}
+static class GourmetCoffee extends Product
+{
+    String flavor;
+    int initStock() {return 10;}
+
+    GourmetCoffee(int productIdValue, String typeValue, String productNameValue, double priceValue, String flavorValue)
+    {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+        flavor = flavorValue;
+    }
+}
+
+public static int initStock()
+{
+    return 20;
+}
+
+}`}]},
+
+{id:'ex431',title:'Static Variables & Access Modifiers',desc:'public, protected, private static methods; call from main without an instance',section:'Static & Methods',tags:['static','oop'],files:[
+{n:'ex431.java',fin:false,code:`public class ex431 {
+
+    static String lastName = "Thomas";
+    static String firstName = "Pat";
+
+
+public static void main (String args[])
+{
+   String fullName = concatName();
+   System.out.println(fullName);
+
+   String lastNameFirstName = lastFirst();
+   System.out.println(lastNameFirstName);
+
+    String init = initials();
+    System.out.println(init);
+
+}
+
+public static String concatName() {
+    return firstName + " " + lastName;
+}
+
+protected static String lastFirst() {
+    return lastName + ", " + firstName;
+}
+
+private static String initials() {
+    return firstName.substring(0,1) + lastName.substring(0,1);
+}
+
+
+}`},
+{n:'ex431f.java',fin:true,code:`public class ex431f {
+
+    static String lastName = "Thomas";
+    static String firstName = "Pat";
+
+
+public static void main (String args[])
+{
+   String fullName = concatName();
+   System.out.println(fullName);
+
+   String lastNameFirstName = lastFirst();
+   System.out.println(lastNameFirstName);
+
+    String init = initials();
+    System.out.println(init);
+
+}
+
+public static String concatName() {
+    return firstName + " " + lastName;
+}
+
+protected static String lastFirst() {
+    return lastName + ", " + firstName;
+}
+
+private static String initials() {
+    return firstName.substring(0,1) + lastName.substring(0,1);
+}
+
+
+}
+
+class GetNames {
+    String fName = ex431.concatName();
+    String lf = ex431.lastFirst();
+    String i = ex431.initials();
+}`}]},
+
+{id:'ex432',title:'Static Method Using Static Field',desc:'orderTotal() reads the static location field to conditionally apply sales tax',section:'Static & Methods',tags:['static'],files:[
+{n:'ex432.java',fin:false,code:`class ex432 {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99);
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+}`},
+{n:'ex432f.java',fin:true,code:`class ex432f {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99);
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+}`}]},
+
+{id:'ex433',title:'void Return Type',desc:'thankYou() method returns nothing; called for its side effect only',section:'Static & Methods',tags:['static'],files:[
+{n:'ex433.java',fin:false,code:`class ex433 {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99);
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+   thankYou();
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+public static void thankYou()
+{
+    System.out.println("Thank you for your order.");
+}
+
+}`},
+{n:'ex433f.java',fin:true,code:`class ex433f {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99);
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+   thankYou();
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+public static void thankYou()
+{
+    System.out.println("Thank you for your order.");
+}
+
+}`}]},
+
+{id:'ex438',title:'Method Overloading',desc:'Two orderTotal() methods with different parameter lists (2 vs 3 params)',section:'Static & Methods',tags:['static','oop'],files:[
+{n:'ex438.java',fin:false,code:`class ex438 {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99, "AZ");
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+public static double orderTotal(int qty, double price, String location)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+}`},
+{n:'ex438f.java',fin:true,code:`class ex438f {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99, "AZ");
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+public static double orderTotal(int qty, double price, String location)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+}`}]},
+
+{id:'ex441',title:'Instance Creation & Field Access',desc:'Create Product instances and access fields directly',section:'Instances & Constructors',tags:['classes','oop'],files:[
+{n:'ex441.java',fin:false,code:`class ex441 {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+}
+
+}`},
+{n:'ex441f.java',fin:true,code:`class ex441f {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    System.out.println("Our first tea is " + prod1.productName + ".");
+    Product prod2 = new Product(2, "Coffee", "Colombian", 7.99);
+    System.out.println("Our first coffee is " + prod2.productName + ".");
+
+}
+static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+}
+
+}`}]},
+
+{id:'ex443',title:'Overloaded Constructors + Optional Field',desc:'bagSize is null unless 5-param constructor used; prodMsg() branches on null check',section:'Instances & Constructors',tags:['classes','oop'],files:[
+{n:'ex443.java',fin:false,code:`class ex443 {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    prodMsg(prod1);
+    Product prod2 = new Product(2, "Coffee", "Colombian", 7.99, "11 oz.");
+    prodMsg(prod2);
+
+}
+public static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+    String bagSize = null;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue, String bagSizeValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+        bagSize = bagSizeValue;
+   }
+}
+
+public static void prodMsg(Product prod) {
+    if (prod.bagSize == null) {
+        System.out.println("The "+ prod.productName + " " + prod.type + " sells for " + prod.price);
+    }
+    else {
+        System.out.println("The "+ prod.productName + " " + prod.type + " sells for " + prod.price + " per " + prod.bagSize + " bag");
+    }
+}
+
+}`},
+{n:'ex443f.java',fin:true,code:`class ex443f {
+
+public static void main (String args[])
+{
+    Product prod1 = new Product(1, "Tea", "Green Tea", 8.99);
+    prodMsg(prod1);
+    Product prod2 = new Product(2, "Coffee", "Colombian", 7.99, "11 oz.");
+    prodMsg(prod2);
+
+}
+public static class Product
+{
+    int productId;
+    String type;
+    String productName;
+    double price;
+    String bagSize = null;
+
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+   }
+   Product(int productIdValue, String typeValue, String productNameValue, double priceValue, String bagSizeValue)
+   {
+        productId = productIdValue;
+        type = typeValue;
+        productName = productNameValue;
+        price = priceValue;
+        bagSize = bagSizeValue;
+   }
+}
+
+public static void prodMsg(Product prod) {
+    if (prod.bagSize == null) {
+        System.out.println("The "+ prod.productName + " " + prod.type + " sells for " + prod.price);
+    }
+    else {
+        System.out.println("The "+ prod.productName + " " + prod.type + " sells for " + prod.price + " per " + prod.bagSize + " bag");
+    }
+}
+
+}`}]},
+
+{id:'ex445',title:'Using External Class & java.util.Date',desc:'Instantiate Tea1 from a separate file; use java.util.Date for current date',section:'Instances & Constructors',tags:['classes','oop'],files:[
+{n:'ex445.java',fin:false,code:`class ex445 {
+
+public static void main (String args[])
+{
+   Tea1 t6 = new Tea1(6, "Regular" , "Raspberry", 6.99);
+
+   System.out.println("Our new tea is " + t6.teaName);
+}
+
+}`},
+{n:'ex445a.java',fin:false,code:`class ex445a {
+
+public static void main (String args[])
+{
+   Tea1 t6 = new Tea1(6, "Regular" , "Raspberry", 6.99);
+
+   System.out.println("Our new tea is " + t6.teaName);
+}
+
+}`},
+{n:'ex445af.java',fin:true,code:`class ex445af {
+
+public static void main (String args[])
+{
+   Tea1 t6 = new Tea1(6, "Regular" , "Raspberry", 6.99);
+
+   System.out.println("Our new tea is " + t6.teaName);
+}
+
+}`},
+{n:'ex445b.java',fin:false,code:`import java.util.Date;
+
+class ex445b {
+
+public static void main (String args[])
+{
+   Tea1 t6 = new Tea1(6, "Regular" , "Raspberry", 6.99);
+   Date currentDate = new Date();
+
+   System.out.println("Our new tea is " + t6.teaName + ", on sale as of " + currentDate);
+}
+
+}`},
+{n:'ex445bf.java',fin:true,code:`import java.util.Date;
+
+class ex445b {
+
+public static void main (String args[])
+{
+   Tea1 t6 = new Tea1(6, "Regular" , "Raspberry", 6.99);
+   Date currentDate = new Date();
+
+   System.out.println("Our new tea is " + t6.teaName + ", on sale as of " + currentDate);
+}
+
+}`}]}
+]},
+
+{id:5,title:'Session 5',topic:'Debugging & Exception Handling',exercises:[
+{id:'ex511',title:'Overloaded Methods + Debug Output',desc:'Debug println inside orderTotal() to trace intermediate values',section:'Debugging',tags:['debugging','static'],files:[
+{n:'ex511.java',fin:false,code:`class ex511 {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99, "AZ");
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+        System.out.println(qty* price);
+        System.out.println(qty * price * .06);
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+public static double orderTotal(int qty, double price, String location)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+}`},
+{n:'ex511f.java',fin:true,code:`class ex511f {
+
+static String location = "UT";
+
+public static void main (String args[])
+{
+   double order1 = orderTotal(5, 9.99);
+   double order2 = orderTotal(4, 8.99, "AZ");
+
+   System.out.println("Your first order total is " + String.format("%.2f", order1));
+   System.out.println("Your second order total is " + String.format("%.2f", order2));
+}
+
+public static double orderTotal(int qty, double price)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+        System.out.println(qty * price);
+        System.out.println(qty * price * .06);
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+public static double orderTotal(int qty, double price, String location)
+{
+    double amount;
+    if(location == "UT")
+    {
+        amount = qty * price * 1.06;
+    }
+    else
+    {
+        amount = qty * price;
+    }
+    return amount;
+}
+
+}`}]},
+
+{id:'ex512',title:'Integer Division via Args',desc:'Divide two command-line strings parsed as integers (watch for truncation)',section:'Debugging',tags:['debugging','types'],files:[
+{n:'ex512.java',fin:false,code:`class ex512 {
+
+public static void main (String args[])
+{
+    String zero = args[0];
+    String one  = args[1];
+
+    System.out.println(Integer.parseInt(zero) / Integer.parseInt(one));
+}
+
+}`},
+{n:'ex512f.java',fin:true,code:`class ex512f {
+
+public static void main (String args[])
+{
+    String zero = args[0];
+    String one  = args[1];
+
+    System.out.println(Integer.parseInt(zero) / Integer.parseInt(one));
+}
+
+}`}]},
+
+{id:'ex513',title:'if-else-if Logic Order Bug',desc:'Bug: Gold condition is unreachable because Silver check is first; swap order to fix',section:'Debugging',tags:['debugging','conditionals'],files:[
+{n:'ex513.java',fin:false,code:`class ex513 {
+
+public static void main (String args[])
+{
+   int orderQty = 105;
+   String customerStatus = "";
+
+   if (orderQty >= 40)
+   {
+       customerStatus = "Silver";
+   }
+   else if (orderQty >= 80)
+   {
+       customerStatus = "Gold";
+   }
+
+   System.out.println("Your customer status is " + customerStatus);
+}
+
+}`},
+{n:'ex513a.java',fin:false,code:`class ex513a {
+
+public static void main (String args[])
+{
+   int orderQty = 45;
+   String customerStatus = "";
+
+   if (orderQty >= 40)
+   {
+       customerStatus = "Silver";
+   }
+   else if (orderQty >= 80)
+   {
+       customerStatus = "Gold";
+   }
+
+   System.out.println("Your customer status is " + customerStatus);
+}
+
+}`},
+{n:'ex513af.java',fin:true,code:`class ex513af {
+
+public static void main (String args[])
+{
+   int orderQty = 50;
+   String customerStatus = "";
+
+   if (orderQty >= 80)
+   {
+       customerStatus = "Gold";
+   }
+   else if (orderQty >= 40)
+   {
+       customerStatus = "Silver";
+   }
+
+   System.out.println("Your customer status is " + customerStatus);
+}
+
+}`}]},
+
+{id:'ex514',title:'Array Element Access',desc:'Access specific array elements by index; avoid unneeded loop',section:'Debugging',tags:['debugging','arrays'],files:[
+{n:'ex514.java',fin:false,code:`class ex231af {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    System.out.println(cocoaBrands[1]);
+
+    for (String cocoa: cocoaBrands) {
+        System.out.println(cocoa);
+    }
+}
+
+}`},
+{n:'ex514f.java',fin:true,code:`class ex514f {
+
+public static void main (String args[])
+{
+    String [] cocoaBrands = new String[4];
+
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    System.out.println(cocoaBrands[1]);
+    System.out.println(cocoaBrands[3]);
+}
+
+}`}]},
+
+{id:'ex515',title:'ArrayIndexOutOfBoundsException Setup',desc:'printItem(4) on a size-4 array will throw at runtime — leads into try-catch',section:'Debugging',tags:['debugging','arrays','exceptions'],files:[
+{n:'ex515.java',fin:false,code:`class ex515 {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    printItem(0);
+    printItem(4);
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`}]},
+
+{id:'ex521',title:'try-catch-finally',desc:'Wrap risky array access in try; catch any Exception; finally always runs',section:'Exception Handling',tags:['exceptions'],files:[
+{n:'ex521.java',fin:false,code:`class ex521 {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(4);
+    }
+    catch(Exception ex){
+        System.out.println("I think you may have tried to show an item that doesn't exist.");
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`},
+{n:'ex521f.java',fin:true,code:`class ex521f {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(4);
+    }
+    catch(Exception ex){
+        System.out.println("I think you may have tried to show an item that doesn't exist.");
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`}]},
+
+{id:'ex522',title:'Multiple catch Blocks',desc:'Specific exception type first (ArrayIndexOutOfBoundsException), general Exception last',section:'Exception Handling',tags:['exceptions'],files:[
+{n:'ex522.java',fin:false,code:`class ex522 {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(4);
+    }
+    catch(ArrayIndexOutOfBoundsException e) {
+        System.out.println("I think you tried to print something that doesn't exist in your array.");
+    }
+    catch (Exception ex) {
+        System.out.println("You have a different problem.");
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`},
+{n:'ex522f.java',fin:true,code:`class ex522f {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(3);
+    }
+    catch(ArrayIndexOutOfBoundsException e) {
+        System.out.println("I think you tried to print something that doesn't exist in your array.");
+    }
+    catch (Exception ex) {
+        System.out.println("You have a different problem.");
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`}]},
+
+{id:'ex523',title:'RuntimeException & FileNotFoundException',desc:'Catch RuntimeException for 5/0 ArithmeticException; FileInputStream throws FileNotFoundException',section:'Exception Handling',tags:['exceptions'],files:[
+{n:'ex523.java',fin:false,code:`class ex523 {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(3);
+        System.out.println(5/0);
+    }
+    catch(ArrayIndexOutOfBoundsException e) {
+        System.out.println("I think you tried to print something that doesn't exist in your array.");
+    }
+    catch (RuntimeException ex) {
+        System.out.println("You have a different problem.");
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`},
+{n:'ex523a.java',fin:false,code:`class ex523a {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(3);
+        System.out.println(5/0);
+    }
+    catch(ArrayIndexOutOfBoundsException e) {
+        System.out.println("I think you tried to print something that doesn't exist in your array.");
+    }
+    catch (RuntimeException ex) {
+        System.out.println("You have a different problem.");
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`},
+{n:'ex523af.java',fin:true,code:`class ex523af {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(3);
+        System.out.println(5/0);
+    }
+    catch(ArrayIndexOutOfBoundsException e) {
+        System.out.println("I think you tried to print something that doesn't exist in your array.");
+    }
+    catch (RuntimeException ex) {
+        System.out.println("You have a different problem.");
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`},
+{n:'ex523b.java',fin:false,code:`import java.io.*;
+
+class ex523b {
+
+public static void main (String args[])
+{
+   FileInputStream testFile = null;
+
+   try
+   {
+       testFile = new FileInputStream("test.txt");
+       System.out.println("Test file found");
+   }
+   catch(FileNotFoundException ex) {
+       System.out.println("Test file not found");
+   }
+}
+
+}`},
+{n:'ex523bf.java',fin:true,code:`import java.io.*;
+
+class ex523b {
+
+public static void main (String args[])
+{
+   FileInputStream testFile = null;
+
+   try
+   {
+       testFile = new FileInputStream("test.txt");
+       System.out.println("Test file found");
+   }
+   catch(FileNotFoundException ex) {
+       System.out.println("Test file not found");
+   }
+}
+
+}`}]},
+
+{id:'ex524',title:'Exception Methods',desc:'e.getClass(), e.getMessage(), e.fillInStackTrace() for detailed error info',section:'Exception Handling',tags:['exceptions'],files:[
+{n:'ex524.java',fin:false,code:`class ex524 {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(4);
+    }
+    catch(Exception e) {
+        System.out.println(e.getClass());
+        System.out.println(e.getMessage());
+        System.out.println(e.fillInStackTrace());
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`},
+{n:'ex524f.java',fin:true,code:`class ex524f {
+
+    static String [] cocoaBrands = new String[4];
+
+public static void main (String args[])
+{
+    cocoaBrands[0] = "Regular";
+    cocoaBrands[1] = "Dark Chocolate";
+    cocoaBrands[2] = null;
+    cocoaBrands[3] = "Sugar free";
+
+    try
+    {
+        printItem(0);
+        printItem(4);
+    }
+    catch(Exception e) {
+        System.out.println(e.getClass());
+        System.out.println(e.getMessage());
+        System.out.println(e.fillInStackTrace());
+    }
+    finally
+    {
+        System.out.println("Code complete.");
+    }
+}
+static void printItem(int item)
+{
+    System.out.println("Item number " + item + " is " + cocoaBrands[item]);
+}
+
+}`}]}
+]}
+];
+
+// Tag class map
+const TC={'output':'t-output','input':'t-input','classes':'t-classes','inheritance':'t-inheritance','oop':'t-oop','arrays':'t-arrays','strings':'t-strings','loops':'t-loops','conditionals':'t-conditionals','exceptions':'t-exceptions','static':'t-static','operators':'t-operators','types':'t-types','casting':'t-casting','collections':'t-collections','debugging':'t-debugging'};
+
+const WB=[
+{domain:1,title:'Domain 1 — Java Basics & I/O',
+ fillBlanks:[
+  {q:'Java programs are compiled into {{bytecode}} that runs on the JVM.'},
+  {q:'Every Java source file is saved with the {{.java}} extension.'},
+  {q:'The entry point of every Java application is the {{main}} method.'},
+  {q:'{{System.out.println}} outputs text and appends a newline character.'},
+  {q:'{{System.out.print}} outputs text without a trailing newline.'},
+  {q:'The escape sequence {{\\t}} inserts a horizontal tab in the output.'},
+  {q:'The escape sequence {{\\n}} inserts a newline character in the output.'},
+  {q:'To read keyboard input, import and instantiate the {{Scanner}} class.'},
+  {q:'Command-line arguments are accessed via the {{args[]}} parameter.'},
+  {q:'{{Integer.parseInt()}} converts a String value into a primitive int.'},
+  {q:'An object is created using the {{new}} keyword followed by a constructor call.'},
+  {q:'The {{public}} access modifier allows access from any other class.'},
+ ],
+ projects:[
+  {title:'Project 1 — Hello World & I/O Basics',
+   files:['ex11.java','ex121f.java','ex122f.java'],
+   time:'20 min',video:'Session 1, Lesson 1',
+   objectives:['1.1 – Compile and run Java programs from the command line','1.2 – Use print and println with escape sequences','1.3 – Read user input with Scanner'],
+   purpose:'Practice creating and running basic Java programs that display output to the console and capture input from the user.',
+   steps:[
+    'Create ex11.java with a class ex11; inside main, use System.out.print to display "Welcome to Java".',
+    'Compile with javac ex11.java and run with java ex11 — confirm the output appears on one line.',
+    'Create ex121f.java; use System.out.println three times to print a coffee menu (Coffee, Small, Large).',
+    'Add the \\t escape sequence after "Small" and the \\n sequence after "Large" — observe the formatting change.',
+    'Create ex122f.java; import java.util.Scanner and instantiate Scanner in = new Scanner(System.in).',
+    'Prompt the user with println, read their name with in.nextLine(), then print a personalised welcome message.',
+    'Test all three programs and confirm output matches the finished (f) file versions.',
+   ]}
+ ]
+},
+{domain:2,title:'Domain 2 — Variables, Operators & Conditionals',
+ fillBlanks:[
+  {q:'Java has {{8}} primitive data types.'},
+  {q:'The primitive type used for whole numbers is {{int}}.'},
+  {q:'The primitive type used for decimal numbers is {{double}}.'},
+  {q:'The primitive type used for true/false values is {{boolean}}.'},
+  {q:'The primitive type used for a single character is {{char}}.'},
+  {q:'The {{%}} operator returns the remainder after integer division.'},
+  {q:'The {{++}} operator increments a numeric variable by 1.'},
+  {q:'An {{if}} statement executes a block only when its condition is true.'},
+  {q:'The {{else}} clause executes when the preceding if condition is false.'},
+  {q:'A {{switch}} statement tests one value against multiple case labels.'},
+  {q:'The {{break}} keyword exits a switch block after a matching case runs.'},
+  {q:'String equality must be tested with {{.equals()}} — not the == operator.'},
+ ],
+ projects:[
+  {title:'Project 2 — Variables, Operators & Decision Structures',
+   files:['ex211.java','ex231f.java','ex251f.java'],
+   time:'25 min',video:'Session 2, Lesson 1',
+   objectives:['2.1 – Declare and assign variables of appropriate primitive types','2.2 – Apply arithmetic and comparison operators','2.3 – Implement if/else and switch decision structures'],
+   purpose:'Build programs that store values in typed variables, perform arithmetic operations, and branch execution using conditional logic.',
+   steps:[
+    'Create ex211.java; declare two int variables and print their sum, difference, product, and quotient.',
+    'Add a third int to hold the modulus (%) and print it — observe how % differs from division.',
+    'Create ex231f.java; declare a double price; use if/else to apply a 10 % discount when price > 10.',
+    'Print both the original price and the discounted price formatted to two decimal places.',
+    'Create ex251f.java; prompt the user for a number 1–7 and use switch to print the matching day name.',
+    'Add a default case that prints "Invalid" for any value outside 1–7.',
+    'Test each file with edge-case inputs (0, 8, negative numbers).',
+   ]}
+ ]
+},
+{domain:3,title:'Domain 3 — Loops, Arrays & Strings',
+ fillBlanks:[
+  {q:'A {{while}} loop evaluates its condition before each iteration.'},
+  {q:'A {{do-while}} loop always executes its body at least once.'},
+  {q:'A {{for}} loop combines initialisation, condition, and update in one statement.'},
+  {q:'An {{array}} is a fixed-size container of elements all of the same type.'},
+  {q:'Array indices start at {{0}}.'},
+  {q:'The {{.length}} property returns the number of slots in an array.'},
+  {q:'An enhanced for loop (for-each) iterates over every element without an {{index}} variable.'},
+  {q:'{{String.toUpperCase()}} returns a new string with all characters uppercased.'},
+  {q:'{{String.length()}} returns the number of characters in the string.'},
+  {q:'{{String.charAt(i)}} returns the character at position i.'},
+  {q:'{{String.substring(a, b)}} extracts characters from index a up to (not including) b.'},
+  {q:'{{String.indexOf()}} returns the index of a substring, or -1 if not found.'},
+ ],
+ projects:[
+  {title:'Project 3 — Loops, Arrays & String Processing',
+   files:['ex311f.java','ex321f.java','ex324f.java'],
+   time:'30 min',video:'Session 3, Lesson 1',
+   objectives:['3.1 – Use while, do-while, and for loops to control repetition','3.2 – Declare, initialise, and traverse arrays','3.3 – Apply built-in String methods to process text'],
+   purpose:'Practice controlling repetition with loops, storing multiple values in arrays, and processing text using Java\'s built-in String methods.',
+   steps:[
+    'Create ex311f.java; use a while loop to print integers 1 through 10, one per line.',
+    'Add a continue statement inside the loop to skip even numbers — only odd numbers should print.',
+    'Create ex321f.java; declare an int[] of five test scores and use a for loop to sum them.',
+    'Compute and print the average; also print each score using an enhanced for-each loop.',
+    'Create ex324f.java; prompt the user to enter a sentence.',
+    'Use String methods to print: the sentence in uppercase, its total character count, and the character at index 3.',
+    'Run each program and compare output with the finished file.',
+   ]}
+ ]
+},
+{domain:4,title:'Domain 4 — Classes & Object-Oriented Programming',
+ fillBlanks:[
+  {q:'{{Encapsulation}} is the OOP principle of bundling data and methods inside a class.'},
+  {q:'The {{private}} keyword restricts field access to within the same class.'},
+  {q:'A method that returns a private field\'s value is called a {{getter}}.'},
+  {q:'A method that modifies a private field\'s value is called a {{setter}}.'},
+  {q:'{{Inheritance}} lets a subclass reuse fields and methods from a superclass.'},
+  {q:'The keyword {{extends}} declares that one class inherits from another.'},
+  {q:'{{Polymorphism}} lets a subclass override a parent method with its own implementation.'},
+  {q:'The {{@Override}} annotation signals that a method replaces a superclass version.'},
+  {q:'The {{this}} keyword refers to the current object instance inside a method.'},
+  {q:'A {{static}} member belongs to the class itself rather than any specific object.'},
+  {q:'{{super()}} calls the parent class constructor from within a subclass constructor.'},
+  {q:'An {{abstract}} class cannot be instantiated and may contain abstract methods.'},
+ ],
+ projects:[
+  {title:'Tea Shop — Part 1: Tea Class',
+   files:['Tea1.java','Tea1f.java'],
+   time:'20 min',video:'Session 4, Lesson 1',
+   objectives:['4.1 – Define a class with fields and a parameterised constructor','4.2 – Instantiate objects and access their public fields'],
+   purpose:'Create a Tea class that models a tea product with a name, type, and price, then instantiate multiple objects and display their data.',
+   steps:[
+    'Create Tea1.java; define a class named Tea with three public fields: name (String), type (String), price (double).',
+    'Write a constructor Tea(String name, String type, double price) that assigns each parameter to its field.',
+    'In the main method, instantiate at least two Tea objects with distinct values.',
+    'Use System.out.println to print each object\'s name, type, and price.',
+    'Compile and run — verify each object displays its own values independently.',
+   ]},
+  {title:'Tea Shop — Part 2: Encapsulation',
+   files:['Tea2.java','Tea2f.java'],
+   time:'20 min',video:'Session 4, Lesson 2',
+   objectives:['4.2 – Apply encapsulation with private fields','4.3 – Write and use public getters and setters'],
+   purpose:'Refactor the Tea class so fields are private and accessible only through getter and setter methods, enforcing data hiding.',
+   steps:[
+    'Copy Tea1f.java to Tea2.java; change all three fields from public to private.',
+    'Write a public getter (getName, getType, getPrice) for each private field.',
+    'Write a public setter (setName, setType, setPrice) for each private field.',
+    'Update main to access values through the getter methods instead of directly.',
+    'Call a setter to change one field on an existing Tea object and print the updated value.',
+    'Confirm that directly accessing a private field (e.g., tea.name) causes a compile error.',
+   ]},
+  {title:'Tea Shop — Part 4: Inheritance & Polymorphism',
+   files:['Tea4.java','Tea4f.java'],
+   time:'25 min',video:'Session 4, Lesson 4',
+   objectives:['4.4 – Create a subclass with extends','4.5 – Override toString() to demonstrate polymorphism'],
+   purpose:'Create a FancyTea subclass that inherits from Tea and adds an extra field, showcasing inheritance and method overriding.',
+   steps:[
+    'Create a new class FancyTea that extends Tea.',
+    'Add a private String field origin to represent where the tea was sourced.',
+    'Write a FancyTea constructor that calls super(name, type, price) and then sets origin.',
+    'Override toString() in FancyTea to return a formatted string that includes all four pieces of data.',
+    'In the main method of Tea4.java, create both Tea and FancyTea objects.',
+    'Print each object — confirm FancyTea uses its overridden toString while Tea uses the default.',
+   ]}
+ ]
+},
+{domain:5,title:'Domain 5 — Exception Handling & Collections',
+ fillBlanks:[
+  {q:'Code that might throw an exception is placed inside a {{try}} block.'},
+  {q:'A {{catch}} block intercepts and handles a specific exception type.'},
+  {q:'The {{finally}} block always executes whether or not an exception occurred.'},
+  {q:'{{Exception}} is the superclass of all checked exceptions in Java.'},
+  {q:'A {{RuntimeException}} is unchecked and does not need to be declared or caught.'},
+  {q:'The {{throw}} keyword explicitly raises an exception from within code.'},
+  {q:'The {{throws}} keyword in a method signature declares the checked exceptions it may raise.'},
+  {q:'An {{ArrayList}} is a dynamically-resizable list from java.util.'},
+  {q:'The {{add()}} method appends a new element to an ArrayList.'},
+  {q:'The {{remove()}} method deletes an element from an ArrayList by index or value.'},
+  {q:'A {{HashMap}} stores data as key-value pairs with O(1) average lookup.'},
+  {q:'The {{get(key)}} method retrieves the value mapped to a given key in a HashMap.'},
+ ],
+ projects:[
+  {title:'Project 5a — Exception Handling',
+   files:['ex511f.java','ex514f.java'],
+   time:'25 min',video:'Session 5, Lesson 1',
+   objectives:['5.1 – Use try/catch to handle runtime exceptions','5.2 – Apply finally for guaranteed cleanup','5.3 – Handle NumberFormatException for invalid input'],
+   purpose:'Write programs that gracefully handle runtime errors with try/catch/finally blocks, preventing crashes from bad input or arithmetic errors.',
+   steps:[
+    'Create ex511f.java; write a method divides two ints and catches ArithmeticException when the divisor is 0.',
+    'In the catch block, print "Cannot divide by zero." instead of crashing.',
+    'Add a finally block that always prints "Operation complete." after each attempt.',
+    'Create ex514f.java; prompt the user for an integer and wrap Integer.parseInt in a try block.',
+    'Catch NumberFormatException if the user enters non-numeric text and print a clear error message.',
+    'Test both programs with intentionally bad inputs and confirm they handle errors without crashing.',
+   ]},
+  {title:'Project 5b — ArrayList & HashMap',
+   files:['ex521f.java','ex524f.java'],
+   time:'25 min',video:'Session 5, Lesson 2',
+   objectives:['5.4 – Declare and use ArrayList<E> to store dynamic lists','5.5 – Declare and use HashMap<K,V> for key-value storage'],
+   purpose:'Practice using Java collection classes to store, retrieve, iterate, and manage groups of related data.',
+   steps:[
+    'Create ex521f.java; declare ArrayList<String> drinks and add at least five coffee drink names.',
+    'Use a for-each loop to print each drink on its own line.',
+    'Call remove() to delete one drink by index and print the updated list.',
+    'Create ex524f.java; declare HashMap<String, Double> menu mapping drink names to prices.',
+    'Add at least four entries with put() — e.g., "Latte", 4.50.',
+    'Iterate over entrySet() with a for-each loop to print every key-value pair.',
+    'Retrieve and print the price for one specific drink using get() — confirm correctness.',
+   ]}
+ ]
+}
+];
+
+let activeSession=1, searchQ='';
+
+function countExercises(){let t=0;S.forEach(s=>t+=s.exercises.length);return t;}
+
+function buildNav(){
+  const nav=document.getElementById('snav');
+  nav.innerHTML='';
+  S.forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className='sess-tab'+(s.id===activeSession?' on':'');
+    btn.textContent=s.title+' — '+s.topic;
+    btn.onclick=()=>{activeSession=s.id;buildNav();render();};
+    nav.appendChild(btn);
+  });
+  const wb=document.createElement('button');
+  wb.className='sess-tab wb-tab'+(activeSession==='wb'?' on':'');
+  wb.textContent='📖 Workbook';
+  wb.onclick=()=>{activeSession='wb';buildNav();render();};
+  nav.appendChild(wb);
+}
+
+function matchSearch(ex,q){
+  if(!q)return true;
+  q=q.toLowerCase();
+  return ex.id.toLowerCase().includes(q)||
+    ex.title.toLowerCase().includes(q)||
+    ex.desc.toLowerCase().includes(q)||
+    ex.tags.some(t=>t.includes(q))||
+    ex.files.some(f=>f.code.toLowerCase().includes(q));
+}
+
+function switchTab(card,idx){
+  card.querySelectorAll('.ftab').forEach((t,i)=>{t.classList.toggle('on',i===idx);});
+  card.querySelectorAll('.cpanel').forEach((p,i)=>{p.classList.toggle('on',i===idx);});
+}
+
+function buildCard(ex){
+  const card=document.createElement('div');
+  card.className='card';
+  // Header
+  const hdr=document.createElement('div');hdr.className='card-hdr';
+  const left=document.createElement('div');left.className='card-left';
+  const h3=document.createElement('h3');h3.textContent=ex.id;
+  const p=document.createElement('p');p.textContent=ex.title+' — '+ex.desc;
+  const tags=document.createElement('div');tags.className='tags';
+  ex.tags.forEach(t=>{const sp=document.createElement('span');sp.className='tag '+(TC[t]||'t-output');sp.textContent=t;tags.appendChild(sp);});
+  left.appendChild(h3);left.appendChild(p);left.appendChild(tags);
+  hdr.appendChild(left);
+  card.appendChild(hdr);
+  // Tabs
+  const ftabs=document.createElement('div');ftabs.className='ftabs';
+  const panels=document.createElement('div');
+  ex.files.forEach((f,i)=>{
+    const tab=document.createElement('button');
+    tab.className='ftab'+(i===0?' on':'')+(f.fin?' fin':'');
+    tab.textContent=f.n+(f.fin?' ✓':'');
+    tab.onclick=()=>switchTab(card,i);
+    ftabs.appendChild(tab);
+    const panel=document.createElement('div');
+    panel.className='cpanel'+(i===0?' on':'');
+    const pre=document.createElement('pre');
+    const code=document.createElement('code');
+    code.className='language-java';
+    code.textContent=f.code;
+    pre.appendChild(code);
+    const copyBtn=document.createElement('button');
+    copyBtn.className='copy-btn';
+    copyBtn.textContent='Copy';
+    copyBtn.onclick=()=>{
+      navigator.clipboard.writeText(f.code).catch(()=>{});
+      copyBtn.textContent='Copied!';copyBtn.classList.add('ok');
+      setTimeout(()=>{copyBtn.textContent='Copy';copyBtn.classList.remove('ok');},2000);
+    };
+    panel.appendChild(pre);
+    panel.appendChild(copyBtn);
+    panels.appendChild(panel);
+    if(typeof Prism!=='undefined')Prism.highlightElement(code);
+  });
+  card.appendChild(ftabs);
+  card.appendChild(panels);
+  return card;
+}
+
+function renderBlankQ(domainIdx, q, globalIdx){
+  const card=document.createElement('div');card.className='wb-card';
+  const num=document.createElement('div');num.className='wb-num';num.textContent=globalIdx+1;
+  const qEl=document.createElement('div');qEl.className='wb-q';
+  const raw=q.q;
+  const parts=raw.split(/\{\{([^}]+)\}\}/);
+  parts.forEach((part,i)=>{
+    if(i%2===0){qEl.appendChild(document.createTextNode(part));}
+    else{
+      const sp=document.createElement('span');sp.className='blank';sp.textContent=part;
+      sp.title='Click to reveal';
+      sp.onclick=()=>sp.classList.toggle('show');
+      qEl.appendChild(sp);
+    }
+  });
+  card.appendChild(num);card.appendChild(qEl);
+  return card;
+}
+
+function renderWorkbook(){
+  const main=document.getElementById('main');
+  main.innerHTML='';
+  const hdr=document.createElement('div');hdr.className='sess-hdr';
+  hdr.innerHTML='<h2>📖 Student Workbook</h2><p>Fill-in-the-blanks &amp; project instructions — click any underlined blank to reveal the answer</p>';
+  main.appendChild(hdr);
+  WB.forEach((domain,di)=>{
+    const sec=document.createElement('div');sec.className='wb-domain';
+    // domain divider
+    const dl=document.createElement('div');dl.className='sec-label';dl.textContent=domain.title;
+    sec.appendChild(dl);
+    // fill-in-the-blanks
+    if(domain.fillBlanks&&domain.fillBlanks.length){
+      const fTitle=document.createElement('div');fTitle.className='wb-section-title';fTitle.textContent='Fill in the Blanks';
+      const toolbar=document.createElement('div');toolbar.className='wb-toolbar';
+      const revBtn=document.createElement('button');revBtn.className='wb-btn';revBtn.textContent='Reveal All';
+      const hideBtn=document.createElement('button');hideBtn.className='wb-btn';hideBtn.textContent='Hide All';
+      const grid=document.createElement('div');grid.className='wb-grid';
+      domain.fillBlanks.forEach((q,qi)=>grid.appendChild(renderBlankQ(di,q,qi)));
+      revBtn.onclick=()=>grid.querySelectorAll('.blank').forEach(b=>b.classList.add('show'));
+      hideBtn.onclick=()=>grid.querySelectorAll('.blank').forEach(b=>b.classList.remove('show'));
+      toolbar.appendChild(revBtn);toolbar.appendChild(hideBtn);
+      sec.appendChild(fTitle);sec.appendChild(toolbar);sec.appendChild(grid);
+    }
+    // projects
+    if(domain.projects&&domain.projects.length){
+      const pTitle=document.createElement('div');pTitle.className='wb-section-title';pTitle.textContent='Project Instructions';
+      sec.appendChild(pTitle);
+      const pgrid=document.createElement('div');pgrid.className='proj-grid';
+      domain.projects.forEach(proj=>{
+        const pc=document.createElement('div');pc.className='proj-card';
+        // header
+        const phdr=document.createElement('div');phdr.className='proj-card-hdr';
+        const ph3=document.createElement('h3');ph3.textContent=proj.title;
+        const pmeta=document.createElement('div');pmeta.className='proj-meta';
+        pmeta.innerHTML=`<span class="proj-meta-item">⏱ <b>${proj.time}</b></span><span class="proj-meta-item">🎬 <b>${proj.video}</b></span>`;
+        const pfiles=document.createElement('div');pfiles.className='proj-files';
+        proj.files.forEach(f=>{const s=document.createElement('span');s.className='proj-file';s.textContent=f;pfiles.appendChild(s);});
+        phdr.appendChild(ph3);phdr.appendChild(pmeta);phdr.appendChild(pfiles);
+        // body
+        const pbody=document.createElement('div');pbody.className='proj-body';
+        const ppur=document.createElement('div');ppur.className='proj-purpose';ppur.textContent=proj.purpose;
+        const pobj=document.createElement('div');pobj.className='proj-objectives';
+        const pobjTitle=document.createElement('div');pobjTitle.className='proj-objectives-title';pobjTitle.textContent='Objectives Covered';
+        const pobjList=document.createElement('ul');
+        proj.objectives.forEach(o=>{const li=document.createElement('li');li.textContent=o;pobjList.appendChild(li);});
+        pobj.appendChild(pobjTitle);pobj.appendChild(pobjList);
+        const pstepsTitle=document.createElement('div');pstepsTitle.className='proj-objectives-title';pstepsTitle.textContent='Steps for Completion';
+        const psteps=document.createElement('ol');psteps.className='proj-steps';
+        proj.steps.forEach(s=>{const li=document.createElement('li');li.textContent=s;psteps.appendChild(li);});
+        pbody.appendChild(ppur);pbody.appendChild(pobj);pbody.appendChild(pstepsTitle);pbody.appendChild(psteps);
+        pc.appendChild(phdr);pc.appendChild(pbody);
+        pgrid.appendChild(pc);
+      });
+      sec.appendChild(pgrid);
+    }
+    main.appendChild(sec);
+  });
+  document.getElementById('stat').textContent=WB.reduce((t,d)=>t+d.fillBlanks.length,0)+' blanks total';
+}
+
+function render(){
+  if(activeSession==='wb'){renderWorkbook();return;}
+  const sess=S.find(s=>s.id===activeSession);
+  const main=document.getElementById('main');
+  main.innerHTML='';
+  const hdr=document.createElement('div');hdr.className='sess-hdr';
+  const h2=document.createElement('h2');h2.textContent=sess.title+' — '+sess.topic;
+  const sub=document.createElement('p');
+  const all=sess.exercises.length;
+  const vis=sess.exercises.filter(e=>matchSearch(e,searchQ)).length;
+  sub.textContent=vis+' of '+all+' exercises'+(searchQ?' matching "'+searchQ+'"':'');
+  hdr.appendChild(h2);hdr.appendChild(sub);
+  main.appendChild(hdr);
+  // Group by section
+  const sections={};const secOrder=[];
+  sess.exercises.forEach(ex=>{
+    if(!sections[ex.section]){sections[ex.section]=[];secOrder.push(ex.section);}
+    sections[ex.section].push(ex);
+  });
+  let totalShown=0;
+  secOrder.forEach(secName=>{
+    const exs=sections[secName].filter(e=>matchSearch(e,searchQ));
+    if(exs.length===0)return;
+    totalShown+=exs.length;
+    const sl=document.createElement('div');sl.className='sec-label';sl.textContent=secName;
+    main.appendChild(sl);
+    const grid=document.createElement('div');grid.className='grid';
+    exs.forEach(ex=>grid.appendChild(buildCard(ex)));
+    main.appendChild(grid);
+  });
+  if(totalShown===0){
+    const empty=document.createElement('div');empty.className='empty';
+    empty.innerHTML='<p>No exercises match <strong>"'+searchQ+'"</strong></p>';
+    main.appendChild(empty);
+  }
+  document.getElementById('stat').textContent=countExercises()+' exercises total';
+}
+
+// Search with debounce
+let debTimer;
+document.getElementById('srch').addEventListener('input',e=>{
+  clearTimeout(debTimer);
+  debTimer=setTimeout(()=>{searchQ=e.target.value.trim();render();},200);
+});
+
+buildNav();
+render();
+</script>
+</body>
+</html>
