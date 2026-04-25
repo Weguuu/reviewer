@@ -37,8 +37,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* Grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:16px}
 /* Card */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s;scroll-margin-top:96px}
 .card:hover{border-color:#58a6ff55}
+.card.jump{border-color:var(--purple);box-shadow:0 0 0 1px #a371f744}
 .card-hdr{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .card-left h3{font-size:13px;font-weight:600;color:var(--text-strong);font-family:'Courier New',monospace}
 .card-left p{font-size:12px;color:var(--text-muted);margin-top:2px}
@@ -70,6 +71,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .wb-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px;display:flex;align-items:flex-start;gap:10px}
 .wb-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--text-muted);display:flex;align-items:center;justify-content:center;margin-top:1px}
 .wb-q{font-size:13px;color:var(--text);line-height:1.7;flex:1}
+.wb-help{margin-top:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;display:flex;flex-direction:column;gap:8px}
+.wb-help-text{font-size:12px;color:var(--text-muted);line-height:1.6}
+.wb-help-code{font-size:11px;font-family:'Courier New',monospace;color:var(--text-strong);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 8px;overflow:auto}
+.wb-help-link{align-self:flex-start;padding:4px 10px;background:transparent;border:1px solid var(--accent);border-radius:6px;color:var(--accent);cursor:pointer;font-size:11px;transition:all .15s}
+.wb-help-link:hover{background:var(--accent);color:#fff}
 .blank{display:inline-block;min-width:72px;border-bottom:2px solid var(--purple);cursor:pointer;color:transparent;padding:0 5px;font-weight:700;font-family:'Courier New',monospace;font-size:12px;transition:color .15s;user-select:none;border-radius:2px 2px 0 0}
 .blank:hover{background:#a371f722}
 .blank.show{color:var(--purple)}
@@ -3605,6 +3611,74 @@ const WB=[
 }
 ];
 
+const BLANK_HELP={
+  'bytecode':{text:'Compiled Java source becomes bytecode, which the JVM can execute.',sample:'javac ex11.java',ref:'ex11'},
+  '.java':{text:'Java source files use the .java extension before they are compiled.',sample:'ex121.java',ref:'ex11'},
+  'main':{text:'A Java console app starts running inside the main method.',sample:'public static void main(String args[]) { }',ref:'ex11'},
+  'System.out.println':{text:'println prints a line and then moves the cursor to the next line.',sample:'System.out.println("Coffee");',ref:'ex121'},
+  'System.out.print':{text:'print writes text without automatically starting a new line.',sample:'System.out.print("Welcome to Java");',ref:'ex11'},
+  '\\t':{text:'Use a tab escape to space text into neat columns.',sample:'System.out.println("Small\\t1.00");',ref:'ex121'},
+  '\\n':{text:'Use a newline escape to force the next output onto a new line.',sample:'System.out.println("Large\\n2.00");',ref:'ex121'},
+  'Scanner':{text:'Scanner reads what the user types into the keyboard.',sample:'Scanner in = new Scanner(System.in);',ref:'ex122'},
+  'args[]':{text:'Command-line inputs are stored in the args array by position.',sample:'String zero = args[0];',ref:'ex111'},
+  'Integer.parseInt()':{text:'parseInt converts numeric text into an int so Java can use it in arithmetic.',sample:'Integer.parseInt(args[0])',ref:'ex111'},
+  'new':{text:'new creates an object by calling its constructor.',sample:'Product product1 = new Product("Coffee", "Medium Roast", 9.99);',ref:'ex112'},
+  'public':{text:'public makes a class or member accessible from other classes.',sample:'public static void main(String args[])',ref:'ex413'},
+  '8':{text:'Java has exactly eight primitive types for storing basic values.',sample:'byte, short, int, long, float, double, char, boolean',ref:'ex211'},
+  'int':{text:'Use int for whole numbers that do not need decimal places.',sample:'int beans = 360;',ref:'ex211'},
+  'double':{text:'Use double for decimal values such as prices and averages.',sample:'double price = 8.99;',ref:'ex211'},
+  'boolean':{text:'A boolean stores only true or false.',sample:'boolean caffeine = true;',ref:'ex211'},
+  'char':{text:'char stores one single character inside single quotes.',sample:"char roast = 'M';",ref:'ex211'},
+  '%':{text:'The modulus operator returns the remainder after division.',sample:'System.out.println(10 % 3); // 1',ref:'ex251'},
+  '++':{text:'The increment operator adds 1 to a numeric variable.',sample:'count++;',ref:'ex324'},
+  'if':{text:'An if statement runs a block only when its condition is true.',sample:'if (qty > 10) { status = "Discount"; }',ref:'ex311'},
+  'else':{text:'else provides the path to run when the if condition is false.',sample:'if (qty > 10) { ... } else { ... }',ref:'ex311'},
+  'switch':{text:'switch compares one value against several possible case labels.',sample:'switch(day) { case 1: ... }',ref:'ex311'},
+  'break':{text:'break stops the current switch case or loop immediately.',sample:'case 1: System.out.println("Mon"); break;',ref:'ex311'},
+  '.equals()':{text:'Use equals when comparing String contents, not ==.',sample:'if (location.equals("Utah")) { ... }'},
+  'while':{text:'while checks its condition before each repetition.',sample:'while (count < 5) { count++; }',ref:'ex321'},
+  'do-while':{text:'do-while runs the block once before checking the condition.',sample:'do { count++; } while (count < 5);',ref:'ex321'},
+  'for':{text:'for keeps the start, condition, and update together in one header.',sample:'for (int i = 0; i < items.length; i++) { ... }',ref:'ex321'},
+  'array':{text:'An array stores multiple values of the same type in fixed slots.',sample:'String[] cups = new String[3];',ref:'ex231'},
+  '0':{text:'The first position in an array is index 0, not 1.',sample:'cups[0] = "Latte";',ref:'ex231'},
+  '.length':{text:'Use the length property to get how many elements an array can hold.',sample:'for (int i = 0; i < cups.length; i++) { ... }',ref:'ex322'},
+  'index':{text:'A for-each loop gives you each element directly, so you do not need an index variable.',sample:'for (String cup : cups) { System.out.println(cup); }',ref:'ex321'},
+  'String.toUpperCase()':{text:'toUpperCase returns a new uppercase version of the original text.',sample:'product1.toUpperCase()',ref:'ex221'},
+  'String.length()':{text:'length() counts how many characters are in a String.',sample:'product1.length()',ref:'ex221'},
+  'String.charAt(i)':{text:'charAt(i) returns one character at the requested position.',sample:'flavor.charAt(0)',ref:'ex223'},
+  'String.substring(a, b)':{text:'substring(a, b) slices part of a String from index a up to b - 1.',sample:'flavor.substring(0, 6)',ref:'ex223'},
+  'String.indexOf()':{text:'indexOf finds where text first appears inside a String.',sample:'name.indexOf("tea")'},
+  'Encapsulation':{text:'Encapsulation protects fields and makes objects interact through methods.',sample:'private String teaName; public String getName() { return teaName; }',ref:'Tea2'},
+  'private':{text:'private hides a field or method so only the same class can use it directly.',sample:'private double price;',ref:'Tea2'},
+  'getter':{text:'A getter returns a private field without exposing the field itself.',sample:'public double getPrice() { return price; }',ref:'Tea2'},
+  'setter':{text:'A setter updates a private field in a controlled way.',sample:'public void setPrice(double price) { this.price = price; }',ref:'Tea2'},
+  'Inheritance':{text:'Inheritance lets one class reuse data and behavior from another class.',sample:'class GourmetTea1 extends Tea1 { }',ref:'Tea1'},
+  'extends':{text:'extends tells Java that the new class is built from an existing parent class.',sample:'class GourmetCoffee extends Product { }',ref:'ex415'},
+  'Polymorphism':{text:'Polymorphism means the same method call can behave differently in a subclass.',sample:'child.initStock();',ref:'ex415'},
+  '@Override':{text:'@Override marks a method that replaces an inherited version from the parent class.',sample:'@Override public String toString() { ... }'},
+  'this':{text:'this refers to the current object, especially when parameter names match field names.',sample:'this.productName = productName;',ref:'ex411'},
+  'static':{text:'static belongs to the class itself, so every object shares the same member.',sample:'static double gourmetSalePrice = 10.99;',ref:'Tea2'},
+  'super()':{text:'super() calls a parent-class constructor before the subclass adds its own setup.',sample:'super(name, type, price);'},
+  'abstract':{text:'An abstract class acts as a base design that other classes extend, but you cannot create it directly.',sample:'abstract class Beverage { }'},
+  'try':{text:'Put risky code inside try so Java knows what section may fail.',sample:'try { printItem(4); }',ref:'ex521'},
+  'catch':{text:'catch handles a matching exception so the program can recover instead of stopping.',sample:'catch (Exception ex) { ... }',ref:'ex521'},
+  'finally':{text:'finally runs after try/catch whether an error happened or not.',sample:'finally { System.out.println("Code complete."); }',ref:'ex521'},
+  'Exception':{text:'Exception is the common parent type for many checked exceptions.',sample:'catch (Exception ex) { ... }',ref:'ex522'},
+  'RuntimeException':{text:'RuntimeException covers unchecked problems such as dividing by zero.',sample:'catch (RuntimeException ex) { ... }',ref:'ex523'},
+  'throw':{text:'throw creates and sends an exception manually from your code.',sample:'throw new IllegalArgumentException("Invalid price");'},
+  'throws':{text:'throws appears in a method header to declare checked exceptions it may pass upward.',sample:'void loadFile() throws FileNotFoundException { ... }',ref:'ex523'},
+  'ArrayList':{text:'ArrayList grows and shrinks as you add or remove elements.',sample:'ArrayList<String> cups = new ArrayList<>();',ref:'ex232'},
+  'add()':{text:'add() appends a new item to the end of an ArrayList.',sample:'cups.add("Latte");',ref:'ex232'},
+  'remove()':{text:'remove() deletes an item by index or by matching value.',sample:'cups.remove(1);',ref:'ex232'},
+  'HashMap':{text:'HashMap stores data as key-value pairs for quick lookup.',sample:'HashMap<String, Double> menu = new HashMap<>();'},
+  'get(key)':{text:'get(key) returns the value currently stored for a given key.',sample:'menu.get("Latte")'}
+};
+
+const EX_LOOKUP=S.reduce((map,session)=>{
+  session.exercises.forEach(ex=>{map[ex.id]=session.id;});
+  return map;
+},{});
+
 let activeSession=1, searchQ='';
 
 function countExercises(){let t=0;S.forEach(s=>t+=s.exercises.length);return t;}
@@ -3641,9 +3715,32 @@ function switchTab(card,idx){
   card.querySelectorAll('.cpanel').forEach((p,i)=>{p.classList.toggle('on',i===idx);});
 }
 
+function blankAnswer(raw){
+  const match=raw.match(/\{\{([^}]+)\}\}/);
+  return match?match[1]:'';
+}
+
+function jumpToExercise(exId){
+  const sessionId=EX_LOOKUP[exId];
+  if(!sessionId)return;
+  activeSession=sessionId;
+  searchQ='';
+  document.getElementById('srch').value='';
+  buildNav();
+  render();
+  requestAnimationFrame(()=>{
+    const target=document.querySelector(`[data-exercise-id="${exId}"]`);
+    if(!target)return;
+    target.classList.add('jump');
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+    setTimeout(()=>target.classList.remove('jump'),1800);
+  });
+}
+
 function buildCard(ex){
   const card=document.createElement('div');
   card.className='card';
+  card.dataset.exerciseId=ex.id;
   // Header
   const hdr=document.createElement('div');hdr.className='card-hdr';
   const left=document.createElement('div');left.className='card-left';
@@ -3693,6 +3790,8 @@ function renderBlankQ(domainIdx, q, globalIdx){
   const num=document.createElement('div');num.className='wb-num';num.textContent=globalIdx+1;
   const qEl=document.createElement('div');qEl.className='wb-q';
   const raw=q.q;
+  const answer=blankAnswer(raw);
+  const helpMeta=BLANK_HELP[answer];
   const parts=raw.split(/\{\{([^}]+)\}\}/);
   parts.forEach((part,i)=>{
     if(i%2===0){qEl.appendChild(document.createTextNode(part));}
@@ -3703,6 +3802,22 @@ function renderBlankQ(domainIdx, q, globalIdx){
       qEl.appendChild(sp);
     }
   });
+  if(helpMeta){
+    const help=document.createElement('div');help.className='wb-help';
+    const text=document.createElement('div');text.className='wb-help-text';text.textContent=helpMeta.text;
+    const sample=document.createElement('div');sample.className='wb-help-code';sample.textContent=helpMeta.sample;
+    help.appendChild(text);
+    help.appendChild(sample);
+    if(helpMeta.ref){
+      const link=document.createElement('button');
+      link.type='button';
+      link.className='wb-help-link';
+      link.textContent='Open '+helpMeta.ref;
+      link.onclick=()=>jumpToExercise(helpMeta.ref);
+      help.appendChild(link);
+    }
+    qEl.appendChild(help);
+  }
   card.appendChild(num);card.appendChild(qEl);
   return card;
 }
